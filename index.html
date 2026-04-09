@@ -147,7 +147,7 @@
     <span>Peptide B2B</span>
     <span>Led by Jason</span>
     <span>Owner &bull; CTO &bull; CFO</span>
-    <span>April 2026</span>
+    <span>April 2026 &bull; walkthrough v2</span>
   </div>
 </div>
 
@@ -176,8 +176,9 @@
     <a href="#phase3">Phase 3 — Connect Discord <span class="toc-time">~20 min</span></a>
     <a href="#phase4">Phase 4 — Create Your 3 AI Agents <span class="toc-time">~30 min</span></a>
     <a href="#phase5">Phase 5 — Connect Agents to Discord Channels <span class="toc-time">~15 min</span></a>
-    <a href="#phase6">Phase 6 — Tailscale for Jason's Remote Access <span class="toc-time">~20 min</span></a>
+    <a href="#phase6">Phase 6 — Tailscale (Optional Remote Access) <span class="toc-time">~20 min</span></a>
     <a href="#phase7">Phase 7 — Test &amp; Go Live <span class="toc-time">~15 min</span></a>
+    <a href="#phase8">Phase 8 — Weekly Kaizen Loop <span class="toc-time">~5 min</span></a>
   </div>
 
 
@@ -271,9 +272,17 @@
     <p class="step-explain">Your first Claude Code prompt! Copy this, paste it into Claude Code, and approve whatever it wants to run.</p>
     <div class="prompt-box">
       <div class="prompt-label"><span>⌨ Paste into Claude Code</span><button class="copy-btn" onclick="copyPrompt(this)">Copy</button></div>
-<pre>Install these tools on this Mac using Homebrew: git, jq, and wget.
+<pre>Install these tools on this Mac using Homebrew:
+git, jq, wget, and gh (the GitHub CLI).
+
 Also make sure Xcode command line tools are installed.
-After installing, verify each one works and show me the versions.</pre>
+If they're missing, run: xcode-select --install
+If it pops open a GUI dialog, I'll click Install and
+wait for it to finish before continuing.
+
+After everything is installed, verify each one works
+and show me the versions (brew --version, git --version,
+jq --version, wget --version, gh --version).</pre>
     </div>
   </div>
 
@@ -357,16 +366,29 @@ OAuth/Extra Usage flow first.</pre>
     <p class="step-explain">The gateway is OpenClaw's brain — it runs in the background on your Mac and manages all your agents. Claude Code configures it to be secure by default.</p>
     <div class="prompt-box">
       <div class="prompt-label"><span>⌨ Paste into Claude Code</span><button class="copy-btn" onclick="copyPrompt(this)">Copy</button></div>
-<pre>Configure OpenClaw's gateway for security:
-1. Make sure the gateway binds to loopback only (localhost)
-   so nothing is exposed to the internet
-2. Set an auth token for the gateway API
-3. Start the gateway: openclaw gateway
-4. Verify it's running with: openclaw status
-5. Show me the status output
+<pre>Configure OpenClaw's gateway for security. Use these
+exact commands in order and show me the output of each:
 
-The gateway should only listen on 127.0.0.1 — never on
-a public IP.</pre>
+1. Bind to loopback only (127.0.0.1):
+   openclaw config set gateway.bind loopback
+
+2. Require a token to call the gateway API:
+   openclaw config set gateway.auth.mode token
+
+3. Start the gateway:
+   openclaw gateway start
+
+4. Check the gateway is healthy:
+   openclaw gateway status
+
+5. Full diagnostic:
+   openclaw status --all
+
+If any command errors out, run "openclaw --help" and
+"openclaw config --help" so we can see the exact
+subcommand syntax your installed version uses, then
+retry. The gateway must ONLY listen on loopback —
+never a public IP.</pre>
     </div>
   </div>
 
@@ -447,23 +469,45 @@ a public IP.</pre>
     <p class="step-explain">Claude Code plugs your bot token into OpenClaw. Replace the 3 placeholder values with your real ones.</p>
     <div class="prompt-box">
       <div class="prompt-label"><span>⌨ Paste into Claude Code — replace the 3 placeholders</span><button class="copy-btn" onclick="copyPrompt(this)">Copy</button></div>
-<pre>Connect OpenClaw to my Discord server.
+<pre>Connect OpenClaw to my Discord server. Do this in the
+safest way — never hardcode the bot token into any
+config file that could be committed to git.
 
 My Discord bot token: YOUR_BOT_TOKEN_HERE
 My Discord user ID: YOUR_USER_ID_HERE
 My Discord server ID: YOUR_SERVER_ID_HERE
 
 Please:
-1. Set the bot token securely using:
-   openclaw config set channels.discord.token --ref-provider default --ref-source env --ref-id DISCORD_BOT_TOKEN
-   (first export the token as an env variable)
-2. Enable Discord:
-   openclaw config set channels.discord.enabled true
-3. Configure my server with requireMention set to false
-   so the bot responds to all messages in channels
-4. Set my user ID as the only allowed DM sender
-5. Restart the gateway
-6. Verify the bot comes online in my Discord server</pre>
+
+1. Store the bot token in an env var. Append this line
+   to ~/.zshrc (replace with my real token):
+     export DISCORD_BOT_TOKEN="YOUR_BOT_TOKEN_HERE"
+   Then reload: source ~/.zshrc
+
+2. Run the interactive Discord setup flow:
+     openclaw configure
+   Select Discord as the channel to configure. When it
+   asks for the token, point it at the DISCORD_BOT_TOKEN
+   env var (not the literal token). Set enabled=true,
+   requireMention=false, and my Discord user ID as the
+   only allowed DM sender.
+
+3. If "openclaw configure" doesn't offer a Discord flow
+   that accepts an env-var reference, edit
+   ~/.openclaw/openclaw.json directly instead. Add a
+   channels.discord section with enabled=true, the token
+   loaded from the DISCORD_BOT_TOKEN env var,
+   requireMention=false, and my user ID in the allowed
+   DM senders list. The gateway watches this file and
+   picks up changes automatically.
+
+4. Show me the resulting openclaw.json (with the token
+   redacted) so I can verify the shape.
+
+5. Restart the gateway: openclaw gateway restart
+
+6. Tell me as soon as you see the bot come online in
+   my Discord server.</pre>
     </div>
   </div>
 
@@ -517,9 +561,11 @@ Please:
 <pre>Create an OpenClaw agent called "security" for my peptide
 B2B company.
 
-1. Create workspace: mkdir -p ~/.openclaw/agents/security
-2. Register it: openclaw agents add security --workspace ~/.openclaw/agents/security
-3. Create a SOUL.md file in that workspace with this content:
+1. Create the workspace directory:
+   mkdir -p ~/.openclaw/agents/security
+
+2. Write the agent's personality to
+   ~/.openclaw/agents/security/SOUL.md with this content:
 
 # Security Adviser
 
@@ -548,7 +594,22 @@ You protect the business.
 - Always flag any request involving customer data
 - If you're unsure about a regulation, say so clearly
 
-4. Verify the agent is registered: openclaw agents list</pre>
+3. Register the agent by editing ~/.openclaw/openclaw.json.
+   Under the "agents" section, add an entry named
+   "security" whose workspace is ~/.openclaw/agents/security
+   and whose system prompt loads SOUL.md from that
+   workspace. The gateway watches this file and picks up
+   new agents automatically.
+
+   If you're unsure of the exact schema my installed
+   version expects, run:
+     openclaw configure
+   and use the interactive flow to add an agent — then
+   show me the resulting openclaw.json so I can verify.
+
+4. Confirm the agent is loaded by running:
+     openclaw status --all
+   and showing me the output.</pre>
     </div>
   </div>
 
@@ -563,9 +624,11 @@ You protect the business.
 <pre>Create an OpenClaw agent called "systems" for my peptide
 B2B company.
 
-1. Create workspace: mkdir -p ~/.openclaw/agents/systems
-2. Register it: openclaw agents add systems --workspace ~/.openclaw/agents/systems
-3. Create a SOUL.md file in that workspace with this content:
+1. Create the workspace directory:
+   mkdir -p ~/.openclaw/agents/systems
+
+2. Write the agent's personality to
+   ~/.openclaw/agents/systems/SOUL.md with this content:
 
 # Systems Designer & Analyst
 
@@ -600,7 +663,14 @@ the business.
 - Never recommend a system without explaining who
   maintains it
 
-4. Verify: openclaw agents list</pre>
+3. Register the agent by adding a second entry to the
+   "agents" section of ~/.openclaw/openclaw.json — name
+   it "systems", workspace ~/.openclaw/agents/systems,
+   system prompt loaded from its SOUL.md. Follow the
+   same shape as the "security" entry we just added.
+
+4. Confirm both agents are loaded:
+     openclaw status --all</pre>
     </div>
   </div>
 
@@ -615,9 +685,11 @@ the business.
 <pre>Create an OpenClaw agent called "cos" for my peptide
 B2B company.
 
-1. Create workspace: mkdir -p ~/.openclaw/agents/cos
-2. Register it: openclaw agents add cos --workspace ~/.openclaw/agents/cos
-3. Create a SOUL.md file in that workspace with this content:
+1. Create the workspace directory:
+   mkdir -p ~/.openclaw/agents/cos
+
+2. Write the agent's personality to
+   ~/.openclaw/agents/cos/SOUL.md with this content:
 
 # Chief of Staff
 
@@ -650,7 +722,15 @@ leader. You keep everything moving.
 - Never send external communications without the
   leader's approval
 
-4. Verify all 3 agents show up: openclaw agents list</pre>
+3. Register the agent by adding a third entry to the
+   "agents" section of ~/.openclaw/openclaw.json — name
+   it "cos", workspace ~/.openclaw/agents/cos, system
+   prompt from its SOUL.md. Same shape as the other two.
+
+4. Confirm all 3 agents are loaded:
+     openclaw status --all
+   and show me the output — I should see security,
+   systems, and cos listed as active agents.</pre>
     </div>
   </div>
 
@@ -659,7 +739,7 @@ leader. You keep everything moving.
     <ul>
       <li>3 agents created: security, systems, cos</li>
       <li>Each has a SOUL.md defining its personality and rules</li>
-      <li>All 3 appear in <code>openclaw agents list</code></li>
+      <li>All 3 appear when you run <code>openclaw status --all</code></li>
     </ul>
   </div>
 
@@ -715,11 +795,19 @@ Please update my openclaw.json config:
     <div class="prompt-box">
       <div class="prompt-label"><span>⌨ Paste into Claude Code</span><button class="copy-btn" onclick="copyPrompt(this)">Copy</button></div>
 <pre>Verify my OpenClaw agent bindings are correct:
-1. Run: openclaw agents list --bindings
-2. Show me which agent is bound to which channel
-3. Check the gateway is healthy: openclaw status
-4. Run: openclaw doctor to catch any config errors
-5. Fix anything that comes up</pre>
+1. Run: openclaw status --all
+2. Run: openclaw doctor — fix anything it flags
+3. Read the "agents" and "bindings" sections of
+   ~/.openclaw/openclaw.json and show them to me so I
+   can eyeball that each Discord channel maps to the
+   right agent:
+     #security       → security
+     #systems        → systems
+     #chief-of-staff → cos
+     #team           → main (default)
+4. If anything looks wrong, fix the openclaw.json
+   entries directly and restart the gateway:
+     openclaw gateway restart</pre>
     </div>
   </div>
 
@@ -738,13 +826,23 @@ Please update my openclaw.json config:
   <!-- PHASE 6 -->
   <!-- ═══════════════════════════════════════ -->
   <div id="phase6" class="phase-header">
-    <div class="phase-label">Phase 6</div>
-    <h2>Tailscale for Jason's Remote Access</h2>
+    <div class="phase-label">Phase 6 &bull; Optional</div>
+    <h2>Tailscale — Optional Remote Access</h2>
     <div class="phase-time">~20 minutes</div>
-    <div class="phase-who">Everyone installs — Jason configures</div>
+    <div class="phase-who">Optional — skip if you don't want Jason to be able to SSH into your Mac</div>
   </div>
 
-  <p class="section-desc">Tailscale creates secure encrypted tunnels so Jason can SSH into any leader's Mac remotely to fix things, update configs, or troubleshoot. No ports are opened to the public internet.</p>
+  <p class="section-desc">Tailscale creates a private encrypted network between your Mac and Jason's Mac so he can SSH in to fix things if something breaks. No ports are opened to the public internet — only Jason's devices on your private tailnet can reach your Mac. <strong>This phase is optional.</strong> If you'd rather handle support over a live screenshare when needed, skip straight to Phase 7.</p>
+
+  <div class="warning" style="border-left-color:#DC2626;background:#FEF2F2;">
+    <div class="warning-label" style="color:#DC2626;">⚠️ Per-machine keys only — never share</div>
+    <p>Each leader gets their <strong>own unique Tailscale auth key</strong>, generated by Jason specifically for your Mac. Do not reuse the same key across machines — if one key leaks, every machine using it is compromised. Jason creates a separate single-use key for each leader in the Tailscale admin console.</p>
+  </div>
+
+  <div class="warning">
+    <div class="warning-label">🔒 Claude Code can't run sudo</div>
+    <p>The remaining steps in this phase use <code>sudo</code>, which Claude Code is not allowed to run for you. The two steps below are marked <strong>manual</strong> — you paste the commands into Terminal yourself and type your Mac password when prompted. This is intentional: you should always know when something on your Mac is asking for admin rights.</p>
+  </div>
 
   <div class="step">
     <div class="step-header">
@@ -765,48 +863,50 @@ Please update my openclaw.json config:
 
   <div class="step">
     <div class="step-header">
-      <span class="step-num">6.2</span>
+      <span class="step-num manual">6.2</span>
       <span class="step-title">Install Tailscale on Your Mac</span>
     </div>
-    <p class="step-explain">Claude Code installs Tailscale and connects your Mac. Replace YOUR_TAILSCALE_KEY with the key Jason gave you.</p>
-    <div class="prompt-box">
-      <div class="prompt-label"><span>⌨ Paste into Claude Code — replace YOUR_TAILSCALE_KEY</span><button class="copy-btn" onclick="copyPrompt(this)">Copy</button></div>
-<pre>Install and configure Tailscale on this Mac:
-1. brew install --cask tailscale
-2. Open the Tailscale app
-3. Authenticate: sudo tailscale up --authkey=YOUR_TAILSCALE_KEY
-4. Run: tailscale status — show me my Tailscale IP
-5. Make sure Remote Login (SSH) is enabled in System Settings
-   so Jason can access this Mac remotely through Tailscale</pre>
+    <p class="step-explain">Paste each line into Terminal one at a time. Replace <code style="background:#eee;padding:1px 4px;border-radius:3px;">YOUR_TAILSCALE_KEY</code> with the unique key Jason sent you for this Mac.</p>
+    <div class="manual-box">
+      <div class="manual-label">✋ Paste each line into Terminal — type your Mac password when asked</div>
+      <ul>
+        <li><code style="background:#eee;padding:2px 6px;border-radius:3px;">brew install --cask tailscale</code> — installs the Tailscale Mac app</li>
+        <li><code style="background:#eee;padding:2px 6px;border-radius:3px;">sudo tailscale up --authkey=YOUR_TAILSCALE_KEY</code> — joins your tailnet</li>
+        <li><code style="background:#eee;padding:2px 6px;border-radius:3px;">tailscale status</code> — copy the <strong>100.x.x.x</strong> address it prints and send it to Jason in Discord DM</li>
+        <li>Enable Remote Login so Jason can SSH in: open <strong>System Settings → General → Sharing</strong>, turn on <strong>Remote Login</strong>, and under "Allow access for" select <strong>Only these users</strong> and add your own user account.</li>
+      </ul>
     </div>
   </div>
 
   <div class="step">
     <div class="step-header">
-      <span class="step-num">6.3</span>
-      <span class="step-title">Keep Mac Running 24/7</span>
+      <span class="step-num manual">6.3</span>
+      <span class="step-title">Keep Mac Awake (Optional)</span>
     </div>
-    <p class="step-explain">Claude Code configures your Mac to never sleep so your agents are always available.</p>
-    <div class="prompt-box">
-      <div class="prompt-label"><span>⌨ Paste into Claude Code</span><button class="copy-btn" onclick="copyPrompt(this)">Copy</button></div>
-<pre>Configure this Mac to run 24/7 as an always-on agent node:
-1. Disable sleep: sudo pmset -a sleep 0 displaysleep 0
-2. Prevent disk sleep: sudo pmset -a disksleep 0
-3. Make sure OpenClaw gateway starts automatically on boot
-   (use openclaw daemon or a launchd plist)
-4. Verify the gateway is running: openclaw status
-5. Show me confirmation that sleep is disabled and the
-   gateway auto-starts</pre>
+    <p class="step-explain">If you want your agents to be reachable even when you're away from your Mac, disable sleep. <strong>Skip this step on a personal laptop</strong> — you can simply keep the Mac awake while you're using the agents, and let it sleep normally the rest of the time. The OpenClaw gateway will auto-start whenever the Mac wakes up, because <code style="background:#eee;padding:1px 4px;border-radius:3px;">openclaw onboard --install-daemon</code> (Phase 2.1) already installed it as a background service.</p>
+    <div class="manual-box">
+      <div class="manual-label">✋ Only if you want your Mac to never sleep — paste each line into Terminal</div>
+      <ul>
+        <li><code style="background:#eee;padding:2px 6px;border-radius:3px;">sudo pmset -a sleep 0</code> — prevents system sleep</li>
+        <li><code style="background:#eee;padding:2px 6px;border-radius:3px;">sudo pmset -a disksleep 0</code> — prevents disk sleep</li>
+        <li><code style="background:#eee;padding:2px 6px;border-radius:3px;">pmset -g</code> — shows your current settings so you can confirm</li>
+        <li>To undo later: <code style="background:#eee;padding:2px 6px;border-radius:3px;">sudo pmset -a sleep 1 disksleep 10</code></li>
+      </ul>
+    </div>
+    <div class="warning">
+      <div class="warning-label">💡 Softer alternative</div>
+      <p>Don't want to permanently disable sleep? Run <code style="background:#eee;padding:1px 4px;border-radius:3px;">caffeinate -i -t 28800</code> in a Terminal window when you want to keep the Mac awake for 8 hours — it expires automatically. Or just close the Terminal window to let it sleep normally.</p>
     </div>
   </div>
 
   <div class="checkpoint">
-    <h3>✓ Phase 6 Complete</h3>
+    <h3>✓ Phase 6 Complete (if you chose to do it)</h3>
     <ul>
-      <li>Tailscale installed on all 3 Macs</li>
-      <li>Jason can SSH to any Mac via Tailscale</li>
-      <li>Macs configured to never sleep</li>
-      <li>OpenClaw gateway auto-starts on boot</li>
+      <li>Tailscale installed and joined your tailnet <em>(if you enabled remote access)</em></li>
+      <li>Jason knows your Tailscale 100.x.x.x address <em>(if you sent it to him)</em></li>
+      <li>Remote Login enabled in System Settings <em>(if you want Jason to SSH in)</em></li>
+      <li>Sleep settings adjusted <em>(optional — only if you want an always-on node)</em></li>
+      <li>OpenClaw gateway auto-start was already handled back in Phase 2.1</li>
     </ul>
   </div>
 
@@ -850,13 +950,17 @@ Please update my openclaw.json config:
       <div class="prompt-label"><span>⌨ Paste into Claude Code</span><button class="copy-btn" onclick="copyPrompt(this)">Copy</button></div>
 <pre>Run a full health check on my OpenClaw setup:
 1. openclaw doctor — fix any issues it finds
-2. openclaw status — show me everything running
-3. openclaw agents list --bindings — confirm agent routing
-4. Check that the gateway is bound to loopback only
-5. Show me a summary of:
-   - Which model is active
-   - Which agents are configured
-   - Which Discord channels are connected
+2. openclaw status --all — show me everything running
+3. openclaw gateway status — confirm the gateway is up
+4. Read ~/.openclaw/openclaw.json and confirm each
+   Discord channel is bound to the right agent
+5. Verify the gateway is bound to loopback (127.0.0.1)
+   and not a public IP
+6. Show me a final summary of:
+   - Which Claude model is active
+   - Which agents are configured (should be: security,
+     systems, cos)
+   - Which Discord channels are connected to which agent
    - Whether the gateway is secure (loopback only)</pre>
     </div>
   </div>
@@ -866,9 +970,114 @@ Please update my openclaw.json config:
     <ul>
       <li>All 3 agents responding in their Discord channels</li>
       <li>Each agent answers in character (Security = risks, Systems = solutions, CoS = action items)</li>
-      <li>Gateway secure and running 24/7</li>
-      <li>Tailscale connected for Jason's remote admin</li>
-      <li>Mac set to never sleep</li>
+      <li>Gateway secure and running on loopback</li>
+      <li>Tailscale connected <em>(only if you chose Phase 6)</em></li>
+      <li>One last thing — head to Phase 8 to turn on the weekly Kaizen loop so your team gets better every Friday</li>
+    </ul>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- PHASE 8 -->
+  <!-- ═══════════════════════════════════════ -->
+  <div id="phase8" class="phase-header">
+    <div class="phase-label">Phase 8</div>
+    <h2>Weekly Kaizen Loop</h2>
+    <div class="phase-time">~5 minutes</div>
+    <div class="phase-who">Everyone does this on their own Mac</div>
+  </div>
+
+  <p class="section-desc">Every Friday at 9am, your Chief of Staff gets a Discord ping reminding it to review the week and suggest 3 improvements. This is how your AI team gets better over time — small, weekly, automatic. Takes 5 minutes to set up.</p>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num manual">8.1</span>
+      <span class="step-title">Create a Discord Webhook</span>
+    </div>
+    <p class="step-explain">A webhook is a URL that lets outside scripts post a message into a specific Discord channel. We use one to ping the Chief of Staff every Friday.</p>
+    <div class="manual-box">
+      <div class="manual-label">✋ Do this in Discord</div>
+      <ul>
+        <li>Right-click the <strong>#chief-of-staff</strong> channel → <strong>Edit Channel</strong></li>
+        <li>Click <strong>Integrations</strong> → <strong>Webhooks</strong> → <strong>New Webhook</strong></li>
+        <li>Name it <strong>Kaizen Bot</strong></li>
+        <li>Click <strong>Copy Webhook URL</strong></li>
+        <li>Paste the URL into a note — you'll need it in the next step</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num">8.2</span>
+      <span class="step-title">Schedule the Friday Kaizen Ping</span>
+    </div>
+    <p class="step-explain">Claude Code creates a tiny script and a cron job that fires every Friday at 9am local time. Replace <code style="background:#eee;padding:1px 4px;border-radius:3px;">YOUR_WEBHOOK_URL</code> with the URL you just copied from Discord.</p>
+    <div class="prompt-box">
+      <div class="prompt-label"><span>⌨ Paste into Claude Code — replace YOUR_WEBHOOK_URL</span><button class="copy-btn" onclick="copyPrompt(this)">Copy</button></div>
+<pre>Set up a weekly Kaizen loop for my Chief of Staff agent.
+
+My Discord webhook URL: YOUR_WEBHOOK_URL
+
+Please do all of this:
+
+1. Create the scripts directory if it doesn't exist:
+     mkdir -p ~/scripts
+
+2. Write ~/scripts/kaizen-friday.sh with this exact
+   content, and substitute my real webhook URL for
+   YOUR_WEBHOOK_URL:
+
+#!/bin/bash
+curl -X POST "YOUR_WEBHOOK_URL" \
+  -H "Content-Type: application/json" \
+  -d '{"content":"🔄 **Weekly Kaizen Review**\n\nIt is Friday. Time to improve your team.\n\n1. Review this weeks daily notes\n2. What worked well?\n3. What was confusing or missing?\n4. Suggest 3 specific improvements\n\nReply in this channel with your 3 improvements."}'
+
+3. Make the script executable:
+     chmod +x ~/scripts/kaizen-friday.sh
+
+4. Add it to my crontab to run every Friday at 9am
+   local time — DO NOT overwrite my existing cron jobs:
+     (crontab -l 2>/dev/null; echo "0 9 * * 5 $HOME/scripts/kaizen-friday.sh") | crontab -
+
+5. Show me the full crontab so I can confirm it's
+   scheduled:
+     crontab -l
+
+6. Fire the script once right now so I can verify the
+   ping actually lands in my #chief-of-staff channel:
+     bash ~/scripts/kaizen-friday.sh
+
+Note: cron only runs while the Mac is awake. If your
+Mac is asleep at 9am Friday, the ping fires the next
+time the Mac wakes up that week.</pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num manual">8.3</span>
+      <span class="step-title">Verify the Test Ping Landed</span>
+    </div>
+    <p class="step-explain">Check your Discord #chief-of-staff channel. You should see a "Weekly Kaizen Review" message that was just posted by the webhook.</p>
+    <div class="manual-box">
+      <div class="manual-label">✋ Check Discord</div>
+      <ul>
+        <li>Open Discord</li>
+        <li>Go to <strong>#chief-of-staff</strong></li>
+        <li>You should see a message starting with <strong>🔄 Weekly Kaizen Review</strong></li>
+        <li>If you don't see it, tell Claude Code: <em>"The Kaizen test ping didn't show up in Discord, please debug."</em></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="checkpoint">
+    <h3>✓ Phase 8 Complete</h3>
+    <ul>
+      <li>Kaizen script lives at ~/scripts/kaizen-friday.sh</li>
+      <li>Cron job scheduled for every Friday at 9am local time</li>
+      <li>First test ping landed in #chief-of-staff</li>
+      <li>Your AI team now has a built-in weekly improvement loop</li>
     </ul>
   </div>
 
@@ -885,13 +1094,19 @@ Please update my openclaw.json config:
       <li><strong>#chief-of-staff</strong> — Ask for drafts, task management, meeting prep</li>
       <li><strong>#team</strong> — General questions go to the default agent</li>
     </ul>
+    <h3 style="font-size:0.93rem;color:var(--navy);margin-top:1rem;margin-bottom:0.4rem;">Every Friday:</h3>
+    <p>Your Chief of Staff gets an automatic Kaizen ping in #chief-of-staff at 9am (set up in Phase 8). Reply to that ping with the 3 improvements it suggests, and your team gets a little better every week.</p>
     <h3 style="font-size:0.93rem;color:var(--navy);margin-top:1rem;margin-bottom:0.4rem;">If Something Breaks:</h3>
     <ul>
       <li>Open Terminal on your Mac</li>
       <li>Type <code style="background:#eee;padding:2px 6px;border-radius:3px;">claude</code> to start Claude Code</li>
       <li>Tell it: <em>"My OpenClaw agents aren't responding in Discord. Diagnose and fix it."</em></li>
-      <li>Or call Jason — he can fix it remotely via Tailscale</li>
+      <li>Or call Jason — he can fix it remotely via Tailscale <em>(only if you enabled Phase 6)</em></li>
     </ul>
+  </div>
+
+  <div style="text-align:center;color:var(--gray-400);font-size:0.72rem;margin-top:2rem;font-family:'JetBrains Mono',monospace;letter-spacing:1px;">
+    walkthrough v2 &bull; hardened 2026-04-09 &bull; 8 phases &bull; Claude-Code-safe
   </div>
 
 </div>
