@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic Team Setup — Walkthrough</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAF8;
+    --surface: #FFFFFF;
+    --navy: #1B2A4A;
+    --blue: #2E75B6;
+    --teal: #0D9488;
+    --orange: #D97706;
+    --red: #DC2626;
+    --purple: #7C3AED;
+    --gray-100: #F3F4F6;
+    --gray-200: #E5E7EB;
+    --gray-400: #9CA3AF;
+    --gray-500: #6B7280;
+    --gray-700: #374151;
+    --gray-900: #111827;
+    --prompt-bg: #1E1E2E;
+    --prompt-text: #CDD6F4;
+    --prompt-accent: #F9E2AF;
+    --manual-bg: #ECFDF5;
+    --manual-border: #059669;
+    --checkpoint-bg: #EFF6FF;
+    --checkpoint-border: #2563EB;
+    --warning-bg: #FFFBEB;
+    --warning-border: #D97706;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--gray-900); line-height: 1.65; }
+
+  .hero {
+    background: linear-gradient(135deg, var(--navy) 0%, #2D3A5C 100%);
+    color: white; padding: 2.5rem 2rem; text-align: center;
+  }
+  .hero h1 { font-family: 'DM Serif Display', serif; font-size: 2.2rem; font-weight: 400; margin-bottom: 0.4rem; }
+  .hero .subtitle { font-size: 1rem; opacity: 0.8; }
+  .hero .meta { margin-top: 1.2rem; display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; font-size: 0.82rem; opacity: 0.65; }
+
+  .container { max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  /* Prereqs */
+  .prereqs {
+    background: var(--surface); border: 1px solid var(--gray-200);
+    border-radius: 12px; padding: 1.75rem; margin-bottom: 2rem;
+  }
+  .prereqs h2 { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--navy); margin-bottom: 0.75rem; }
+  .prereqs p { color: var(--gray-700); margin-bottom: 0.75rem; font-size: 0.95rem; }
+  .prereqs ul { list-style: none; padding: 0; }
+  .prereqs li { padding: 0.35rem 0 0.35rem 1.6rem; position: relative; color: var(--gray-700); font-size: 0.93rem; }
+  .prereqs li::before { content: "✓"; position: absolute; left: 0; color: var(--teal); font-weight: 700; }
+
+  /* Phase */
+  .phase-header { margin-top: 2.5rem; margin-bottom: 1.2rem; padding-bottom: 0.6rem; border-bottom: 3px solid var(--navy); }
+  .phase-header .phase-label { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; color: var(--blue); margin-bottom: 0.2rem; }
+  .phase-header h2 { font-family: 'DM Serif Display', serif; font-size: 1.6rem; color: var(--navy); }
+  .phase-header .phase-time { font-size: 0.82rem; color: var(--gray-500); margin-top: 0.2rem; }
+  .phase-header .phase-who { font-size: 0.82rem; color: var(--teal); font-weight: 600; }
+
+  /* Step */
+  .step { margin-bottom: 1.8rem; }
+  .step-header { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.3rem; }
+  .step-num { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 600; color: var(--blue); background: #EBF5FB; padding: 0.12rem 0.45rem; border-radius: 4px; white-space: nowrap; }
+  .step-num.manual { color: var(--teal); background: var(--manual-bg); }
+  .step-title { font-size: 1.05rem; font-weight: 700; color: var(--navy); }
+  .step-explain { color: var(--gray-500); font-size: 0.9rem; margin-bottom: 0.6rem; }
+
+  /* Prompt Box */
+  .prompt-box {
+    background: var(--prompt-bg); border-radius: 8px;
+    padding: 1.1rem 1.3rem; position: relative; margin-bottom: 0.4rem; overflow-x: auto;
+  }
+  .prompt-box .prompt-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+    text-transform: uppercase; letter-spacing: 1.5px; color: var(--prompt-accent);
+    margin-bottom: 0.4rem; display: flex; justify-content: space-between; align-items: center;
+  }
+  .prompt-box pre {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
+    color: var(--prompt-text); white-space: pre-wrap; word-wrap: break-word; line-height: 1.55; margin: 0;
+  }
+  .copy-btn {
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
+    color: var(--prompt-accent); font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; padding: 0.2rem 0.5rem; border-radius: 4px;
+    cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 1px;
+  }
+  .copy-btn:hover { background: rgba(255,255,255,0.2); }
+  .copy-btn.copied { color: #A6E3A1; border-color: #A6E3A1; }
+
+  /* Manual Box */
+  .manual-box {
+    background: var(--manual-bg); border-left: 4px solid var(--manual-border);
+    border-radius: 0 8px 8px 0; padding: 0.9rem 1.1rem;
+  }
+  .manual-box .manual-label { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--manual-border); margin-bottom: 0.4rem; }
+  .manual-box ul { list-style: none; padding: 0; }
+  .manual-box li { padding: 0.2rem 0 0.2rem 1.1rem; position: relative; font-size: 0.88rem; color: var(--gray-700); }
+  .manual-box li::before { content: "→"; position: absolute; left: 0; color: var(--manual-border); font-weight: 600; }
+
+  /* Checkpoint */
+  .checkpoint {
+    background: var(--checkpoint-bg); border: 2px solid var(--checkpoint-border);
+    border-radius: 10px; padding: 1.1rem 1.3rem; margin: 1.5rem 0;
+  }
+  .checkpoint h3 { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--checkpoint-border); margin-bottom: 0.4rem; }
+  .checkpoint ul { list-style: none; padding: 0; }
+  .checkpoint li { padding: 0.25rem 0 0.25rem 1.3rem; position: relative; font-size: 0.88rem; color: var(--gray-700); }
+  .checkpoint li::before { content: "□"; position: absolute; left: 0; color: var(--checkpoint-border); font-weight: 700; }
+
+  /* Warning */
+  .warning {
+    background: var(--warning-bg); border-left: 4px solid var(--warning-border);
+    border-radius: 0 8px 8px 0; padding: 0.9rem 1.1rem; margin: 1rem 0;
+  }
+  .warning .warning-label { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--warning-border); margin-bottom: 0.3rem; }
+  .warning p { font-size: 0.88rem; color: var(--gray-700); }
+
+  .divider { height: 1px; background: var(--gray-200); margin: 2rem 0; }
+  .section-desc { color: var(--gray-700); font-size: 0.93rem; margin-bottom: 1.2rem; line-height: 1.7; }
+
+  .toc { background: var(--surface); border: 1px solid var(--gray-200); border-radius: 12px; padding: 1.3rem 1.75rem; margin-bottom: 2rem; }
+  .toc h3 { font-size: 0.8rem; color: var(--gray-500); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0.6rem; }
+  .toc a { display: block; padding: 0.3rem 0; color: var(--navy); text-decoration: none; font-size: 0.93rem; font-weight: 600; }
+  .toc a:hover { color: var(--blue); }
+  .toc .toc-time { color: var(--gray-400); font-size: 0.78rem; margin-left: 0.4rem; font-weight: 400; }
+
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 1.6rem; }
+    .container { padding: 1rem; }
+    .prompt-box { padding: 0.9rem; }
+    .prompt-box pre { font-size: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>Your AI Team Setup</h1>
+  <p class="subtitle">3 Leaders &bull; 3 Macs &bull; 9 AI Agents &bull; Claude Code Does the Work</p>
+  <div class="meta">
+    <span>Peptide B2B</span>
+    <span>Led by Jason</span>
+    <span>Owner &bull; CTO &bull; CFO</span>
+    <span>April 2026</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ── HOW THIS WORKS ── -->
+  <div class="prereqs">
+    <h2>How This Works</h2>
+    <p><strong>Every step is a prompt you copy and paste into Claude Code.</strong> Claude Code reads the prompt, does the work, and asks you to approve each action. You just say "yes" and move on.</p>
+    <p>Steps marked <span style="color:var(--teal);font-weight:600;">✋ MANUAL</span> are the few things you click or type yourself. Everything else = copy, paste, approve.</p>
+    <p><strong>Jason leads. Everyone follows along on their own Mac at the same time.</strong></p>
+    <h3 style="font-size:0.93rem;color:var(--navy);margin-top:1rem;margin-bottom:0.4rem;">Before We Start — Everyone Confirm:</h3>
+    <ul>
+      <li>Your Mac is on and connected to internet</li>
+      <li>You have your Claude Pro account with $200 Extra Usage enabled</li>
+      <li>You know your Mac's admin password</li>
+      <li>You have a Discord account</li>
+    </ul>
+  </div>
+
+  <!-- ── TOC ── -->
+  <div class="toc">
+    <h3>The Plan</h3>
+    <a href="#phase1">Phase 1 — Get Claude Code Running <span class="toc-time">~20 min</span></a>
+    <a href="#phase2">Phase 2 — Install OpenClaw <span class="toc-time">~15 min</span></a>
+    <a href="#phase3">Phase 3 — Connect Discord <span class="toc-time">~20 min</span></a>
+    <a href="#phase4">Phase 4 — Create Your 3 AI Agents <span class="toc-time">~30 min</span></a>
+    <a href="#phase5">Phase 5 — Connect Agents to Discord Channels <span class="toc-time">~15 min</span></a>
+    <a href="#phase6">Phase 6 — Tailscale for Jason's Remote Access <span class="toc-time">~20 min</span></a>
+    <a href="#phase7">Phase 7 — Test &amp; Go Live <span class="toc-time">~15 min</span></a>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- PHASE 1 -->
+  <!-- ═══════════════════════════════════════ -->
+  <div id="phase1" class="phase-header">
+    <div class="phase-label">Phase 1</div>
+    <h2>Get Claude Code Running</h2>
+    <div class="phase-time">~20 minutes</div>
+    <div class="phase-who">Everyone does this on their own Mac</div>
+  </div>
+
+  <p class="section-desc">Claude Code is the command-line tool that will do all the technical setup for you. We install it first, then it handles everything else.</p>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num manual">1.1</span>
+      <span class="step-title">Open Terminal</span>
+    </div>
+    <p class="step-explain">Terminal is the app where Claude Code lives. It's already on your Mac.</p>
+    <div class="manual-box">
+      <div class="manual-label">✋ Do this yourself</div>
+      <ul>
+        <li>Press <strong>Cmd + Space</strong> (opens Spotlight search)</li>
+        <li>Type <strong>Terminal</strong></li>
+        <li>Press <strong>Enter</strong></li>
+        <li>A black/white window appears — this is Terminal</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num manual">1.2</span>
+      <span class="step-title">Install Homebrew</span>
+    </div>
+    <p class="step-explain">Homebrew is a tool installer for Mac. Copy this line, paste it into Terminal, and press Enter. It'll ask for your Mac password.</p>
+    <div class="manual-box">
+      <div class="manual-label">✋ Paste into Terminal — press Enter — type your Mac password when asked</div>
+      <ul>
+        <li><code style="background:#eee;padding:2px 6px;border-radius:3px;font-size:0.85rem;word-break:break-all;">/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</code></li>
+        <li>Wait 2-3 minutes for it to finish</li>
+        <li><strong>Important:</strong> At the end it shows "Next steps" — copy and paste those commands too</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num manual">1.3</span>
+      <span class="step-title">Install Node.js + Claude Code</span>
+    </div>
+    <p class="step-explain">Two quick installs. Paste each line into Terminal one at a time.</p>
+    <div class="manual-box">
+      <div class="manual-label">✋ Paste each line into Terminal, one at a time</div>
+      <ul>
+        <li><code style="background:#eee;padding:2px 6px;border-radius:3px;">brew install node</code> — wait for it to finish</li>
+        <li><code style="background:#eee;padding:2px 6px;border-radius:3px;">npm install -g @anthropic-ai/claude-code</code> — wait for it to finish</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num manual">1.4</span>
+      <span class="step-title">Launch Claude Code &amp; Log In</span>
+    </div>
+    <p class="step-explain">Start Claude Code and connect it to your Claude Pro account.</p>
+    <div class="manual-box">
+      <div class="manual-label">✋ Do this yourself</div>
+      <ul>
+        <li>In Terminal, type <code style="background:#eee;padding:2px 6px;border-radius:3px;">claude</code> and press Enter</li>
+        <li>It opens a login page in your browser — sign in with your Claude Pro account</li>
+        <li>Come back to Terminal — you should see the Claude Code prompt (a <strong>></strong> waiting for input)</li>
+        <li><strong>This is where you'll paste all future prompts</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="warning">
+    <div class="warning-label">⏸ Everyone stop here</div>
+    <p>Jason checks: all 3 leaders have Claude Code open and logged in. Everyone sees the <strong>></strong> prompt. Good? Move on.</p>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num">1.5</span>
+      <span class="step-title">Install Basic Tools</span>
+    </div>
+    <p class="step-explain">Your first Claude Code prompt! Copy this, paste it into Claude Code, and approve whatever it wants to run.</p>
+    <div class="prompt-box">
+      <div class="prompt-label"><span>⌨ Paste into Claude Code</span><button class="copy-btn" onclick="copyPrompt(this)">Copy</button></div>
+<pre>Install these tools on this Mac using Homebrew: git, jq, and wget.
+Also make sure Xcode command line tools are installed.
+After installing, verify each one works and show me the versions.</pre>
+    </div>
+  </div>
+
+  <div class="checkpoint">
+    <h3>✓ Phase 1 Complete</h3>
+    <ul>
+      <li>Claude Code running on all 3 Macs</li>
+      <li>Everyone logged in with Claude Pro</li>
+      <li>Basic tools installed</li>
+    </ul>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- PHASE 2 -->
+  <!-- ═══════════════════════════════════════ -->
+  <div id="phase2" class="phase-header">
+    <div class="phase-label">Phase 2</div>
+    <h2>Install OpenClaw</h2>
+    <div class="phase-time">~15 minutes</div>
+    <div class="phase-who">Everyone does this on their own Mac</div>
+  </div>
+
+  <p class="section-desc">OpenClaw is the AI agent framework. It runs on your Mac and connects your AI agents to Discord. One install, everything is built in.</p>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num">2.1</span>
+      <span class="step-title">Install OpenClaw</span>
+    </div>
+    <p class="step-explain">Claude Code installs OpenClaw and verifies it's working.</p>
+    <div class="prompt-box">
+      <div class="prompt-label"><span>⌨ Paste into Claude Code</span><button class="copy-btn" onclick="copyPrompt(this)">Copy</button></div>
+<pre>Install OpenClaw on this Mac:
+1. Run: npm install -g openclaw@latest
+2. Run: openclaw --version to verify it installed
+3. Run: openclaw onboard --install-daemon to set up the
+   background service
+4. Show me the version number when done</pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num">2.2</span>
+      <span class="step-title">Connect to Claude (Extra Usage)</span>
+    </div>
+    <p class="step-explain">This connects OpenClaw to your Claude account using Extra Usage billing. Your $200 credit covers this.</p>
+    <div class="prompt-box">
+      <div class="prompt-label"><span>⌨ Paste into Claude Code</span><button class="copy-btn" onclick="copyPrompt(this)">Copy</button></div>
+<pre>Configure OpenClaw to use Claude as the AI model.
+
+I have a Claude Pro subscription with Extra Usage enabled
+($200 credit). Set up the Anthropic provider connection.
+
+1. Run: openclaw configure
+2. When it asks for a provider, select Anthropic
+3. Follow the authentication flow — it should open a
+   browser for me to log in with my Claude account
+4. Set the default model to: anthropic/claude-sonnet-4-6
+5. Verify the connection works by running a test message
+6. Show me confirmation that it's connected and which
+   model it's using
+
+If it asks for an API key instead of OAuth, help me set
+up an API key from console.anthropic.com — but try the
+OAuth/Extra Usage flow first.</pre>
+    </div>
+  </div>
+
+  <div class="warning">
+    <div class="warning-label">💰 Cost Note</div>
+    <p>Each leader has $200 Extra Usage credit. Claude Sonnet costs roughly $3-15 per million tokens. Normal daily use with 3 agents = around $2-8/day. Your $200 will last a long time for learning and setup.</p>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num">2.3</span>
+      <span class="step-title">Set Up the Gateway</span>
+    </div>
+    <p class="step-explain">The gateway is OpenClaw's brain — it runs in the background on your Mac and manages all your agents. Claude Code configures it to be secure by default.</p>
+    <div class="prompt-box">
+      <div class="prompt-label"><span>⌨ Paste into Claude Code</span><button class="copy-btn" onclick="copyPrompt(this)">Copy</button></div>
+<pre>Configure OpenClaw's gateway for security:
+1. Make sure the gateway binds to loopback only (localhost)
+   so nothing is exposed to the internet
+2. Set an auth token for the gateway API
+3. Start the gateway: openclaw gateway
+4. Verify it's running with: openclaw status
+5. Show me the status output
+
+The gateway should only listen on 127.0.0.1 — never on
+a public IP.</pre>
+    </div>
+  </div>
+
+  <div class="checkpoint">
+    <h3>✓ Phase 2 Complete</h3>
+    <ul>
+      <li>OpenClaw installed on all 3 Macs</li>
+      <li>Connected to Claude via Extra Usage</li>
+      <li>Gateway running and bound to localhost</li>
+    </ul>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- PHASE 3 -->
+  <!-- ═══════════════════════════════════════ -->
+  <div id="phase3" class="phase-header">
+    <div class="phase-label">Phase 3</div>
+    <h2>Connect Discord</h2>
+    <div class="phase-time">~20 minutes</div>
+    <div class="phase-who">Everyone does this on their own Mac + in Discord</div>
+  </div>
+
+  <p class="section-desc">Each leader gets their own Discord server with channels for each agent. OpenClaw has Discord built in — we just need to create a bot and plug in the token.</p>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num manual">3.1</span>
+      <span class="step-title">Create Your Discord Server</span>
+    </div>
+    <p class="step-explain">Each leader creates their own private Discord server for their AI team.</p>
+    <div class="manual-box">
+      <div class="manual-label">✋ Do this in Discord (app or browser)</div>
+      <ul>
+        <li>Open Discord</li>
+        <li>Click the <strong>+</strong> button on the left sidebar → "Create My Own" → "For me and my friends"</li>
+        <li>Name it: <strong>[YourName] AI Team</strong></li>
+        <li>Create these channels: <strong>#security</strong>, <strong>#systems</strong>, <strong>#chief-of-staff</strong>, <strong>#team</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num manual">3.2</span>
+      <span class="step-title">Create Your Discord Bot</span>
+    </div>
+    <p class="step-explain">Each leader creates a bot that will be their AI agents' voice in Discord.</p>
+    <div class="manual-box">
+      <div class="manual-label">✋ Do this in your browser — Jason walks you through it</div>
+      <ul>
+        <li>Go to <strong>discord.com/developers/applications</strong></li>
+        <li>Click <strong>New Application</strong> → name it <strong>PeptideAI-[YourName]</strong> → click Create</li>
+        <li>Click <strong>Bot</strong> in the sidebar</li>
+        <li>Click <strong>Reset Token</strong> → <strong>Copy the token</strong> → save it in a note (you need this in the next step)</li>
+        <li>Scroll down to <strong>Privileged Gateway Intents</strong>:</li>
+        <li>Turn ON: <strong>Message Content Intent</strong></li>
+        <li>Turn ON: <strong>Server Members Intent</strong></li>
+        <li>Click <strong>Save Changes</strong></li>
+        <li>Click <strong>OAuth2</strong> in the sidebar → <strong>URL Generator</strong></li>
+        <li>Check: <strong>bot</strong></li>
+        <li>Under Bot Permissions check: <strong>Send Messages</strong>, <strong>Read Message History</strong>, <strong>Add Reactions</strong></li>
+        <li>Copy the URL at the bottom → open it in a new tab → add the bot to YOUR server</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="warning">
+    <div class="warning-label">📝 You need 3 things for the next step</div>
+    <p>Have these ready: (1) Your <strong>bot token</strong> from step 3.2, (2) Your <strong>Discord user ID</strong> (enable Developer Mode in Discord Settings → Advanced, then right-click your name → Copy User ID), (3) Your <strong>server ID</strong> (right-click your server name → Copy Server ID).</p>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num">3.3</span>
+      <span class="step-title">Connect OpenClaw to Discord</span>
+    </div>
+    <p class="step-explain">Claude Code plugs your bot token into OpenClaw. Replace the 3 placeholder values with your real ones.</p>
+    <div class="prompt-box">
+      <div class="prompt-label"><span>⌨ Paste into Claude Code — replace the 3 placeholders</span><button class="copy-btn" onclick="copyPrompt(this)">Copy</button></div>
+<pre>Connect OpenClaw to my Discord server.
+
+My Discord bot token: YOUR_BOT_TOKEN_HERE
+My Discord user ID: YOUR_USER_ID_HERE
+My Discord server ID: YOUR_SERVER_ID_HERE
+
+Please:
+1. Set the bot token securely using:
+   openclaw config set channels.discord.token --ref-provider default --ref-source env --ref-id DISCORD_BOT_TOKEN
+   (first export the token as an env variable)
+2. Enable Discord:
+   openclaw config set channels.discord.enabled true
+3. Configure my server with requireMention set to false
+   so the bot responds to all messages in channels
+4. Set my user ID as the only allowed DM sender
+5. Restart the gateway
+6. Verify the bot comes online in my Discord server</pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num manual">3.4</span>
+      <span class="step-title">Test the Connection</span>
+    </div>
+    <p class="step-explain">Go to your Discord server and send a message to make sure the bot is alive.</p>
+    <div class="manual-box">
+      <div class="manual-label">✋ Do this in Discord</div>
+      <ul>
+        <li>Go to any channel in your new server</li>
+        <li>Type: <strong>Hello, are you there?</strong></li>
+        <li>Your bot should respond within a few seconds</li>
+        <li>If it doesn't respond, tell Jason — we'll debug with Claude Code</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="checkpoint">
+    <h3>✓ Phase 3 Complete</h3>
+    <ul>
+      <li>Each leader has their own Discord server with channels</li>
+      <li>Discord bot is online and responding</li>
+      <li>OpenClaw is connected to Discord</li>
+    </ul>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- PHASE 4 -->
+  <!-- ═══════════════════════════════════════ -->
+  <div id="phase4" class="phase-header">
+    <div class="phase-label">Phase 4</div>
+    <h2>Create Your 3 AI Agents</h2>
+    <div class="phase-time">~30 minutes</div>
+    <div class="phase-who">Everyone does this on their own Mac</div>
+  </div>
+
+  <p class="section-desc">Each leader gets 3 agents: a <strong>Security Adviser</strong>, a <strong>Systems Designer &amp; Analyst</strong>, and a <strong>Chief of Staff</strong>. Each agent has its own personality and expertise defined in a SOUL.md file — this is how OpenClaw knows what each agent is.</p>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num">4.1</span>
+      <span class="step-title">Create the Security Adviser</span>
+    </div>
+    <p class="step-explain">Claude Code creates the agent, its workspace, and writes its personality/rules.</p>
+    <div class="prompt-box">
+      <div class="prompt-label"><span>⌨ Paste into Claude Code</span><button class="copy-btn" onclick="copyPrompt(this)">Copy</button></div>
+<pre>Create an OpenClaw agent called "security" for my peptide
+B2B company.
+
+1. Create workspace: mkdir -p ~/.openclaw/agents/security
+2. Register it: openclaw agents add security --workspace ~/.openclaw/agents/security
+3. Create a SOUL.md file in that workspace with this content:
+
+# Security Adviser
+
+## Identity
+You are the Security Adviser for a peptide B2B company.
+You protect the business.
+
+## What You Do
+- Review business decisions for security risks
+- Flag compliance issues (FDA, HIPAA, biotech regulations)
+- Assess vendor and partner proposals for red flags
+- Advise on data protection for formulations, trade
+  secrets, and customer information
+- Threat-model new systems and integrations
+
+## How You Communicate
+- Be direct. Flag issues with severity: LOW / MEDIUM /
+  HIGH / CRITICAL
+- Explain risks in plain English, not jargon
+- Always recommend a specific action, not just "be careful"
+- If something is fine, say so — don't invent problems
+
+## Rules
+- Never approve sharing proprietary formulations externally
+  without explicit owner sign-off
+- Always flag any request involving customer data
+- If you're unsure about a regulation, say so clearly
+
+4. Verify the agent is registered: openclaw agents list</pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num">4.2</span>
+      <span class="step-title">Create the Systems Designer &amp; Analyst</span>
+    </div>
+    <p class="step-explain">This agent designs processes, analyzes data, and recommends systems.</p>
+    <div class="prompt-box">
+      <div class="prompt-label"><span>⌨ Paste into Claude Code</span><button class="copy-btn" onclick="copyPrompt(this)">Copy</button></div>
+<pre>Create an OpenClaw agent called "systems" for my peptide
+B2B company.
+
+1. Create workspace: mkdir -p ~/.openclaw/agents/systems
+2. Register it: openclaw agents add systems --workspace ~/.openclaw/agents/systems
+3. Create a SOUL.md file in that workspace with this content:
+
+# Systems Designer & Analyst
+
+## Identity
+You are the Systems Designer and Business Analyst for a
+peptide B2B company. You build the machine that runs
+the business.
+
+## What You Do
+- Design operational workflows and business processes
+- Analyze data and produce actionable insights
+- Map supply chain, manufacturing, and distribution systems
+- Recommend tools and technical infrastructure
+- Evaluate build-vs-buy decisions
+- Create process documentation and system diagrams
+
+## How You Communicate
+- Lead with the recommendation, then explain why
+- Use simple diagrams described in text when helpful
+- Always consider cost, complexity, and timeline
+- Give options when there's no obvious single answer
+
+## Industry Context
+- Peptide manufacturing, cold chain logistics
+- B2B sales cycles (long, relationship-based)
+- Regulatory requirements affect every system decision
+
+## Rules
+- Always flag security implications for the Security
+  Adviser to review
+- Include cost estimates when recommending tools/systems
+- Never recommend a system without explaining who
+  maintains it
+
+4. Verify: openclaw agents list</pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num">4.3</span>
+      <span class="step-title">Create the Chief of Staff</span>
+    </div>
+    <p class="step-explain">This agent keeps everything organized — tasks, communications, priorities.</p>
+    <div class="prompt-box">
+      <div class="prompt-label"><span>⌨ Paste into Claude Code</span><button class="copy-btn" onclick="copyPrompt(this)">Copy</button></div>
+<pre>Create an OpenClaw agent called "cos" for my peptide
+B2B company.
+
+1. Create workspace: mkdir -p ~/.openclaw/agents/cos
+2. Register it: openclaw agents add cos --workspace ~/.openclaw/agents/cos
+3. Create a SOUL.md file in that workspace with this content:
+
+# Chief of Staff
+
+## Identity
+You are the Chief of Staff for a peptide B2B company
+leader. You keep everything moving.
+
+## What You Do
+- Manage task lists and priorities
+- Draft professional communications (emails, memos, briefs)
+- Prepare meeting agendas and post-meeting summaries
+- Track goals, KPIs, and project milestones
+- Synthesize input from the Security Adviser and Systems
+  Designer into clear action items
+- Maintain a "what's on fire / what's next / what can wait"
+  framework at all times
+
+## How You Communicate
+- Write clearly and concisely — executive-ready language
+- Lead with the most important thing
+- Use bullet points for action items
+- When summarizing others' input, credit them
+  ("Per the Security Adviser..." / "Systems recommends...")
+
+## Rules
+- Always end task lists with owners and deadlines
+- Flag anything that's been waiting more than 3 days
+  without progress
+- If you don't have enough context, ask — don't guess
+- Never send external communications without the
+  leader's approval
+
+4. Verify all 3 agents show up: openclaw agents list</pre>
+    </div>
+  </div>
+
+  <div class="checkpoint">
+    <h3>✓ Phase 4 Complete</h3>
+    <ul>
+      <li>3 agents created: security, systems, cos</li>
+      <li>Each has a SOUL.md defining its personality and rules</li>
+      <li>All 3 appear in <code>openclaw agents list</code></li>
+    </ul>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- PHASE 5 -->
+  <!-- ═══════════════════════════════════════ -->
+  <div id="phase5" class="phase-header">
+    <div class="phase-label">Phase 5</div>
+    <h2>Connect Agents to Discord Channels</h2>
+    <div class="phase-time">~15 minutes</div>
+    <div class="phase-who">Everyone does this on their own Mac</div>
+  </div>
+
+  <p class="section-desc">Now we tell OpenClaw which Discord channel maps to which agent. When you type in #security, the Security Adviser answers. When you type in #systems, the Systems Designer answers.</p>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num">5.1</span>
+      <span class="step-title">Bind Agents to Channels</span>
+    </div>
+    <p class="step-explain">Claude Code updates your OpenClaw config to route each Discord channel to the right agent. Replace YOUR_SERVER_ID with your actual server ID.</p>
+    <div class="prompt-box">
+      <div class="prompt-label"><span>⌨ Paste into Claude Code — replace YOUR_SERVER_ID</span><button class="copy-btn" onclick="copyPrompt(this)">Copy</button></div>
+<pre>Set up channel-to-agent bindings in OpenClaw so each
+Discord channel routes to the right AI agent.
+
+My Discord server ID: YOUR_SERVER_ID
+
+I have these channels and agents:
+- #security channel → "security" agent
+- #systems channel → "systems" agent
+- #chief-of-staff channel → "cos" agent
+- #team channel → should use the default "main" agent
+
+Please update my openclaw.json config:
+1. In the agents section, add all 3 agents to agents.list
+   with their workspaces
+2. In the bindings section, map each Discord channel name
+   to its agent ID
+3. Set the default agent to "main" for unbound channels
+4. Restart the gateway: openclaw gateway restart
+5. Show me the final config so I can verify it looks right</pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num">5.2</span>
+      <span class="step-title">Verify the Bindings</span>
+    </div>
+    <p class="step-explain">Quick check that everything is wired up correctly.</p>
+    <div class="prompt-box">
+      <div class="prompt-label"><span>⌨ Paste into Claude Code</span><button class="copy-btn" onclick="copyPrompt(this)">Copy</button></div>
+<pre>Verify my OpenClaw agent bindings are correct:
+1. Run: openclaw agents list --bindings
+2. Show me which agent is bound to which channel
+3. Check the gateway is healthy: openclaw status
+4. Run: openclaw doctor to catch any config errors
+5. Fix anything that comes up</pre>
+    </div>
+  </div>
+
+  <div class="checkpoint">
+    <h3>✓ Phase 5 Complete</h3>
+    <ul>
+      <li>#security → Security Adviser</li>
+      <li>#systems → Systems Designer</li>
+      <li>#chief-of-staff → Chief of Staff</li>
+      <li>openclaw doctor shows no errors</li>
+    </ul>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- PHASE 6 -->
+  <!-- ═══════════════════════════════════════ -->
+  <div id="phase6" class="phase-header">
+    <div class="phase-label">Phase 6</div>
+    <h2>Tailscale for Jason's Remote Access</h2>
+    <div class="phase-time">~20 minutes</div>
+    <div class="phase-who">Everyone installs — Jason configures</div>
+  </div>
+
+  <p class="section-desc">Tailscale creates secure encrypted tunnels so Jason can SSH into any leader's Mac remotely to fix things, update configs, or troubleshoot. No ports are opened to the public internet.</p>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num manual">6.1</span>
+      <span class="step-title">Jason: Create Tailscale Account</span>
+    </div>
+    <p class="step-explain">Jason creates one Tailscale account for the team and generates auth keys.</p>
+    <div class="manual-box">
+      <div class="manual-label">✋ Jason does this in a browser</div>
+      <ul>
+        <li>Go to <strong>login.tailscale.com</strong> → create an account</li>
+        <li>Go to Settings → Keys → Generate auth key</li>
+        <li>Create 3 keys (one per Mac) — pre-approved: YES</li>
+        <li>Give each leader their key</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num">6.2</span>
+      <span class="step-title">Install Tailscale on Your Mac</span>
+    </div>
+    <p class="step-explain">Claude Code installs Tailscale and connects your Mac. Replace YOUR_TAILSCALE_KEY with the key Jason gave you.</p>
+    <div class="prompt-box">
+      <div class="prompt-label"><span>⌨ Paste into Claude Code — replace YOUR_TAILSCALE_KEY</span><button class="copy-btn" onclick="copyPrompt(this)">Copy</button></div>
+<pre>Install and configure Tailscale on this Mac:
+1. brew install --cask tailscale
+2. Open the Tailscale app
+3. Authenticate: sudo tailscale up --authkey=YOUR_TAILSCALE_KEY
+4. Run: tailscale status — show me my Tailscale IP
+5. Make sure Remote Login (SSH) is enabled in System Settings
+   so Jason can access this Mac remotely through Tailscale</pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num">6.3</span>
+      <span class="step-title">Keep Mac Running 24/7</span>
+    </div>
+    <p class="step-explain">Claude Code configures your Mac to never sleep so your agents are always available.</p>
+    <div class="prompt-box">
+      <div class="prompt-label"><span>⌨ Paste into Claude Code</span><button class="copy-btn" onclick="copyPrompt(this)">Copy</button></div>
+<pre>Configure this Mac to run 24/7 as an always-on agent node:
+1. Disable sleep: sudo pmset -a sleep 0 displaysleep 0
+2. Prevent disk sleep: sudo pmset -a disksleep 0
+3. Make sure OpenClaw gateway starts automatically on boot
+   (use openclaw daemon or a launchd plist)
+4. Verify the gateway is running: openclaw status
+5. Show me confirmation that sleep is disabled and the
+   gateway auto-starts</pre>
+    </div>
+  </div>
+
+  <div class="checkpoint">
+    <h3>✓ Phase 6 Complete</h3>
+    <ul>
+      <li>Tailscale installed on all 3 Macs</li>
+      <li>Jason can SSH to any Mac via Tailscale</li>
+      <li>Macs configured to never sleep</li>
+      <li>OpenClaw gateway auto-starts on boot</li>
+    </ul>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- PHASE 7 -->
+  <!-- ═══════════════════════════════════════ -->
+  <div id="phase7" class="phase-header">
+    <div class="phase-label">Phase 7</div>
+    <h2>Test &amp; Go Live</h2>
+    <div class="phase-time">~15 minutes</div>
+    <div class="phase-who">Everyone tests their own agents</div>
+  </div>
+
+  <p class="section-desc">The moment of truth. Everyone opens Discord and talks to their AI team.</p>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num manual">7.1</span>
+      <span class="step-title">Test Each Agent</span>
+    </div>
+    <p class="step-explain">Go to your Discord server and send a message in each channel. Each agent should respond in character.</p>
+    <div class="manual-box">
+      <div class="manual-label">✋ Type these in your Discord channels</div>
+      <ul>
+        <li>In <strong>#security</strong>: <em>What are the top 3 data security risks for a peptide B2B company?</em></li>
+        <li>In <strong>#systems</strong>: <em>What CRM would you recommend for a B2B peptide company and why?</em></li>
+        <li>In <strong>#chief-of-staff</strong>: <em>Draft a 3-bullet status update about our AI team deployment for the next board meeting.</em></li>
+        <li>In <strong>#team</strong>: <em>We're evaluating a new supplier. Give me your thoughts.</em></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num">7.2</span>
+      <span class="step-title">Run Health Check</span>
+    </div>
+    <p class="step-explain">Claude Code runs the OpenClaw doctor to make sure everything is clean.</p>
+    <div class="prompt-box">
+      <div class="prompt-label"><span>⌨ Paste into Claude Code</span><button class="copy-btn" onclick="copyPrompt(this)">Copy</button></div>
+<pre>Run a full health check on my OpenClaw setup:
+1. openclaw doctor — fix any issues it finds
+2. openclaw status — show me everything running
+3. openclaw agents list --bindings — confirm agent routing
+4. Check that the gateway is bound to loopback only
+5. Show me a summary of:
+   - Which model is active
+   - Which agents are configured
+   - Which Discord channels are connected
+   - Whether the gateway is secure (loopback only)</pre>
+    </div>
+  </div>
+
+  <div class="checkpoint" style="border-color: var(--teal); background: #ECFDF5;">
+    <h3 style="color: var(--teal);">🎉 YOU'RE LIVE</h3>
+    <ul>
+      <li>All 3 agents responding in their Discord channels</li>
+      <li>Each agent answers in character (Security = risks, Systems = solutions, CoS = action items)</li>
+      <li>Gateway secure and running 24/7</li>
+      <li>Tailscale connected for Jason's remote admin</li>
+      <li>Mac set to never sleep</li>
+    </ul>
+  </div>
+
+
+  <!-- ── DAILY USE ── -->
+  <div class="divider"></div>
+
+  <div class="prereqs">
+    <h2>Daily Use — Your Cheat Sheet</h2>
+    <p>Just go to your Discord server and type in any channel. The right agent answers automatically.</p>
+    <ul>
+      <li><strong>#security</strong> — Ask about risks, compliance, vendor reviews</li>
+      <li><strong>#systems</strong> — Ask about processes, tools, data analysis</li>
+      <li><strong>#chief-of-staff</strong> — Ask for drafts, task management, meeting prep</li>
+      <li><strong>#team</strong> — General questions go to the default agent</li>
+    </ul>
+    <h3 style="font-size:0.93rem;color:var(--navy);margin-top:1rem;margin-bottom:0.4rem;">If Something Breaks:</h3>
+    <ul>
+      <li>Open Terminal on your Mac</li>
+      <li>Type <code style="background:#eee;padding:2px 6px;border-radius:3px;">claude</code> to start Claude Code</li>
+      <li>Tell it: <em>"My OpenClaw agents aren't responding in Discord. Diagnose and fix it."</em></li>
+      <li>Or call Jason — he can fix it remotely via Tailscale</li>
+    </ul>
+  </div>
+
+</div>
+
+<script>
+function copyPrompt(btn) {
+  const pre = btn.closest('.prompt-box').querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+</script>
+
+</body>
+</html>
