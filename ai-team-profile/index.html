@@ -547,6 +547,68 @@ textarea {
   color: rgba(250,249,246,0.85);
 }
 
+.send-card {
+  background: var(--accent-light);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 2rem 1.5rem;
+  text-align: center;
+}
+
+.send-icon {
+  margin-bottom: 12px;
+}
+
+.send-title {
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: 1.3rem;
+  color: var(--accent-text);
+  margin-bottom: 4px;
+}
+
+.send-desc {
+  font-size: 14px;
+  color: var(--accent-text);
+  opacity: 0.8;
+  margin-bottom: 1.25rem;
+}
+
+.send-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 14px 32px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-md);
+}
+
+.send-btn:hover {
+  background: var(--accent-text);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(45,106,79,0.25);
+}
+
+.send-btn:active {
+  transform: translateY(0);
+}
+
+.send-hint {
+  font-size: 12px;
+  color: var(--accent-text);
+  opacity: 0.6;
+  margin-top: 10px;
+}
+
 .toast {
   position: fixed;
   bottom: 24px;
@@ -886,12 +948,26 @@ textarea {
   </div>
 
   <div class="output-area" id="outputArea">
-    <div class="output-card">
+
+    <div class="send-card" id="sendCard">
+      <div class="send-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+      </div>
+      <h3 class="send-title">Your profile is ready!</h3>
+      <p class="send-desc">Send it to Jason so he can configure your AI team.</p>
+      <button class="send-btn" onclick="sendToJason()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 4L12 13L2 4"/></svg>
+        Send to Jason
+      </button>
+      <p class="send-hint">Opens your email app with everything pre-filled — just hit send.</p>
+    </div>
+
+    <div class="output-card" style="margin-top: 12px;">
       <div class="output-header">
-        <span>USER.md — ready to deploy</span>
+        <span>USER.md preview</span>
         <div class="output-actions">
           <button class="output-btn" onclick="copyOutput()">Copy</button>
-          <button class="output-btn primary" onclick="downloadOutput()">Download .md</button>
+          <button class="output-btn" onclick="downloadOutput()">Download .md</button>
         </div>
       </div>
       <div class="output-content" id="outputContent"></div>
@@ -1093,6 +1169,13 @@ function downloadOutput() {
   a.download = 'USER-' + firstName.toLowerCase() + '.md';
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function sendToJason() {
+  const firstName = document.getElementById('firstName').value.trim() || 'Team Member';
+  const subject = encodeURIComponent('AI Team Profile — ' + firstName);
+  const body = encodeURIComponent('Hey Jason,\n\nHere\'s my AI team profile. You should be able to paste this right into my USER.md.\n\n---\n\n' + (window._generatedMd || '') + '\n---\n\nThanks!');
+  window.location.href = 'mailto:jason@meta57.xyz?subject=' + subject + '&body=' + body;
 }
 
 updateProgress();
