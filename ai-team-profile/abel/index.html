@@ -641,7 +641,7 @@ textarea {
 <header class="page-header">
   <div class="header-inner">
     <div class="header-badge">Peptide B2B — AI Team Setup</div>
-    <h1>Welcome, <span class="name-highlight" id="headerName">Able</span></h1>
+    <h1>Welcome, <span class="name-highlight" id="headerName">Abel</span></h1>
     <p>Help your AI team get to know you. This takes about 5 minutes and makes your agents dramatically more useful from day one.</p>
   </div>
 </header>
@@ -662,7 +662,7 @@ textarea {
       <div class="field-row">
         <div>
           <label class="field-label" for="firstName">First name</label>
-          <input type="text" id="firstName" placeholder="Able" oninput="updateProgress(); updateHeaderName()">
+          <input type="text" id="firstName" placeholder="Abel" oninput="updateProgress(); updateHeaderName()">
         </div>
         <div>
           <label class="field-label" for="lastName">Last name</label>
@@ -729,7 +729,7 @@ textarea {
     <p class="hint">Your immediate team, partners, advisors — anyone you interact with regularly.</p>
     <div id="teamList">
       <div class="team-member">
-        <div><label class="field-label">Name</label><input type="text" placeholder="e.g. Able" oninput="updateProgress()"></div>
+        <div><label class="field-label">Name</label><input type="text" placeholder="e.g. Abel" oninput="updateProgress()"></div>
         <div><label class="field-label">Role</label><input type="text" placeholder="e.g. CTO" oninput="updateProgress()"></div>
         <button class="remove-btn" onclick="removeTeamMember(this)" title="Remove">&times;</button>
       </div>
@@ -1004,7 +1004,7 @@ function removeTeamMember(btn) {
 
 function updateHeaderName() {
   const name = document.getElementById('firstName').value.trim();
-  document.getElementById('headerName').textContent = name || 'Able';
+  document.getElementById('headerName').textContent = name || 'Abel';
 }
 
 function updateProgress() {
@@ -1066,7 +1066,7 @@ function getTeamMembers() {
 }
 
 function generateOutput() {
-  const firstName = document.getElementById('firstName').value.trim() || 'Able';
+  const firstName = document.getElementById('firstName').value.trim() || 'Abel';
   const lastName = document.getElementById('lastName').value.trim();
   const fullName = (firstName + ' ' + lastName).trim();
   const title = document.getElementById('title').value.trim() || 'Owner';
