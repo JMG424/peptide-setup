@@ -954,12 +954,12 @@ textarea {
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
       </div>
       <h3 class="send-title">Your profile is ready!</h3>
-      <p class="send-desc">Send it to Jason so he can configure your AI team.</p>
-      <button class="send-btn" onclick="sendToJason()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 4L12 13L2 4"/></svg>
-        Send to Jason
+      <p class="send-desc">Copy it and text it to Jason so he can configure your AI team.</p>
+      <button class="send-btn" onclick="copyAndSend()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copy &amp; text to Jason
       </button>
-      <p class="send-hint">Opens your email app with everything pre-filled — just hit send.</p>
+      <p class="send-hint" id="sendHint">Copies your profile to clipboard — then paste it in a text to Jason.</p>
     </div>
 
     <div class="output-card" style="margin-top: 12px;">
@@ -1172,10 +1172,24 @@ function downloadOutput() {
 }
 
 function sendToJason() {
+  copyAndSend();
+}
+
+function copyAndSend() {
   const firstName = document.getElementById('firstName').value.trim() || 'Team Member';
-  const subject = encodeURIComponent('AI Team Profile — ' + firstName);
-  const body = encodeURIComponent('Hey Jason,\n\nHere\'s my AI team profile. You should be able to paste this right into my USER.md.\n\n---\n\n' + (window._generatedMd || '') + '\n---\n\nThanks!');
-  window.location.href = 'mailto:jason@meta57.xyz?subject=' + subject + '&body=' + body;
+  const text = 'AI Team Profile — ' + firstName + '\n\n' + (window._generatedMd || '');
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.send-btn');
+    const hint = document.getElementById('sendHint');
+    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Copied!';
+    btn.style.background = '#1b4332';
+    hint.textContent = 'Now paste it in a text to Jason. Done!';
+    setTimeout(() => {
+      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy & text to Jason';
+      btn.style.background = '';
+      hint.textContent = 'Copies your profile to clipboard — then paste it in a text to Jason.';
+    }, 3000);
+  });
 }
 
 updateProgress();
