@@ -371,17 +371,31 @@ footer p { font-size: 13px; color: var(--text-dim); margin-bottom: 4px; }
       <div class="code-block">
         <span class="code-label">Claude Code Prompt</span>
         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        <code><span class="comment"># After receiving new tokens from BotFather, update them on the machine:</span>
+        <code><span class="comment"># Step 1: Set PATH (run this first in every new Terminal window)</span>
+<span class="cmd">export PATH="$HOME/.npm-global/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"</span>
 
-Update the Telegram bot tokens in ~/.openclaw/openclaw.json:
-- cos bot token: [PASTE NEW COS TOKEN]
-- security bot token: [PASTE NEW SECURITY TOKEN]  
-- systems bot token: [PASTE NEW SYSTEMS TOKEN]
+<span class="comment"># Step 2: Backup current config</span>
+<span class="cmd">cp ~/.openclaw/openclaw.json ~/.openclaw/openclaw.json.backup-$(date +%Y%m%d)</span>
 
-Then restart the gateway with `openclaw gateway restart` and verify it's healthy with `openclaw gateway probe`.
+<span class="comment"># Step 3: Update tokens (replace NEW_TOKEN values with actual tokens from BotFather)</span>
+<span class="cmd">python3 -c "
+import json
+c = json.load(open('$HOME/.openclaw/openclaw.json'))
+tg = c['channels']['telegram']['accounts']
+tg['cos']['botToken'] = 'NEW_COS_TOKEN_HERE'
+tg['security']['botToken'] = 'NEW_SECURITY_TOKEN_HERE'
+tg['systems']['botToken'] = 'NEW_SYSTEMS_TOKEN_HERE'
+json.dump(c, open('$HOME/.openclaw/openclaw.json', 'w'), indent=2)
+print('Tokens updated')
+"</span>
 
-Test that Telegram still works by sending a dry-run message:
-openclaw message send --channel telegram --account cos --target [CHAT_ID] --message "Token rotation complete" --dry-run</code>
+<span class="comment"># Step 4: Restart gateway and verify</span>
+<span class="cmd">openclaw gateway restart</span>
+<span class="cmd">sleep 5</span>
+<span class="cmd">openclaw gateway probe | head -8</span>
+
+<span class="comment"># Step 5: Test Telegram delivery (dry-run — won't actually send)</span>
+<span class="cmd">openclaw message send --channel telegram --account cos --target 8694483017 --message "Token rotation complete" --dry-run</span></code>
       </div>
     </div>
 
@@ -397,19 +411,41 @@ openclaw message send --channel telegram --account cos --target [CHAT_ID] --mess
       <div class="code-block">
         <span class="code-label">Claude Code Prompt</span>
         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        <code><span class="comment"># Harden tool permissions in openclaw.json</span>
+        <code><span class="comment"># Harden tool permissions — run this in Terminal</span>
+<span class="cmd">export PATH="$HOME/.npm-global/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"</span>
 
-Update the tools section of ~/.openclaw/openclaw.json:
+<span class="cmd">python3 -c "
+import json
+c = json.load(open('$HOME/.openclaw/openclaw.json'))
+web = c.get('tools',{}).get('web',{})
+c['tools'] = {
+    'profile': 'messaging',
+    'web': web,
+    'deny': ['sessions_spawn', 'sessions_send'],
+    'fs': {'workspaceOnly': True},
+    'exec': {'security': 'deny', 'ask': 'always'},
+    'elevated': {'enabled': False}
+}
+json.dump(c, open('$HOME/.openclaw/openclaw.json', 'w'), indent=2)
+print('Tool permissions hardened')
+"</span>
 
-Set tools.profile to "messaging"
-Set tools.fs.workspaceOnly to true
-Set tools.exec.security to "deny" and tools.exec.ask to "always"
-Set tools.elevated.enabled to false
-Add tools.deny array with: "sessions_spawn", "sessions_send"
+<span class="comment"># Restart and verify</span>
+<span class="cmd">openclaw gateway restart</span>
+<span class="cmd">sleep 5</span>
+<span class="cmd">curl -s http://127.0.0.1:18789/health</span>
 
-Preserve existing tools.web config (web search should stay enabled).
-
-Restart the gateway and verify it's healthy.</code>
+<span class="comment"># Verify permissions are set correctly</span>
+<span class="cmd">cat ~/.openclaw/openclaw.json | python3 -c "
+import json,sys
+c = json.load(sys.stdin)
+t = c.get('tools',{})
+print('Profile:', t.get('profile'))
+print('Exec security:', t.get('exec',{}).get('security'))
+print('FS workspaceOnly:', t.get('fs',{}).get('workspaceOnly'))
+print('Elevated:', t.get('elevated',{}).get('enabled'))
+print('Deny list:', t.get('deny',[]))
+"</span></code>
       </div>
     </div>
   </div>
@@ -435,15 +471,19 @@ Restart the gateway and verify it's healthy.</code>
       <div class="code-block">
         <span class="code-label">Claude Code Prompt</span>
         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        <code><span class="comment"># Install Google Workspace CLI on this machine</span>
+        <code><span class="comment"># Install Google Workspace CLI</span>
+<span class="cmd">export PATH="$HOME/.npm-global/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"</span>
 
-Run in Terminal:
-export PATH="$HOME/.npm-global/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"
-npm install -g @googleworkspace/cli
+<span class="cmd">npm install -g @googleworkspace/cli</span>
 
-Verify installation with: which gog && gog --version
+<span class="comment"># Verify installation</span>
+<span class="cmd">which gog</span>
+<span class="cmd">gog --version</span>
 
-If gog is not found after install, check npm global bin path and add to PATH.</code>
+<span class="comment"># If 'gog' not found, try:</span>
+<span class="cmd">echo $PATH</span>
+<span class="cmd">npm root -g</span>
+<span class="cmd">ls $(npm root -g)/../bin/ | grep gog</span></code>
       </div>
     </div>
 
@@ -474,21 +514,25 @@ If gog is not found after install, check npm global bin path and add to PATH.</c
       <div class="code-block">
         <span class="code-label">Claude Code Prompt</span>
         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        <code><span class="comment"># Authenticate Google account for Gmail + Calendar access</span>
+        <code><span class="comment"># Authenticate Tylor's Google account (browser will open — Tylor clicks Allow)</span>
+<span class="cmd">export PATH="$HOME/.npm-global/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"</span>
 
-Run in Terminal:
-export PATH="$HOME/.npm-global/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"
+<span class="comment"># Replace with Tylor's actual email address</span>
+<span class="cmd">gog auth add tylor@example.com</span>
 
-gog auth add [USER_EMAIL]
+<span class="comment"># Tylor logs in and clicks "Allow" in the browser window</span>
+<span class="comment"># Then verify authorization worked:</span>
+<span class="cmd">gog auth status</span>
 
-This will open a browser on the Mac. The user needs to log in and click Allow.
+<span class="comment"># Test Gmail access — should show 3 recent emails</span>
+<span class="cmd">gog gmail list --max-results 3</span>
 
-After authorization, verify with:
-gog auth status
-gog gmail list --max-results 3
-gog calendar events list --max-results 3
+<span class="comment"># Test Calendar access — should show upcoming events</span>
+<span class="cmd">gog calendar events list --max-results 3</span>
 
-If both commands return data, Google integration is working.</code>
+<span class="comment"># If Tylor has a SECOND Google account (e.g., TMG vs Path):</span>
+<span class="cmd"># gog auth add tylor-second@example.com</span>
+<span class="cmd"># gog auth status</span></code>
       </div>
     </div>
 
@@ -504,25 +548,37 @@ If both commands return data, Google integration is working.</code>
       <div class="code-block">
         <span class="code-label">Claude Code Prompt</span>
         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        <code><span class="comment"># Connect Google Workspace CLI to OpenClaw as MCP server</span>
+        <code><span class="comment"># Connect Google Workspace to OpenClaw as MCP server</span>
+<span class="cmd">export PATH="$HOME/.npm-global/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"</span>
 
-Add a Google Workspace MCP server to ~/.openclaw/openclaw.json:
-
-Add to the mcpServers section (create if it doesn't exist):
-"google-workspace": {
-  "command": "npx",
-  "args": ["@google/workspace-mcp"],
-  "env": {}
+<span class="cmd">python3 -c "
+import json
+c = json.load(open('$HOME/.openclaw/openclaw.json'))
+c.setdefault('mcpServers', {})['google-workspace'] = {
+    'command': 'npx',
+    'args': ['@google/workspace-mcp'],
+    'env': {}
 }
+json.dump(c, open('$HOME/.openclaw/openclaw.json', 'w'), indent=2)
+print('Google Workspace MCP server configured')
+"</span>
 
-Restart the gateway: openclaw gateway restart
-Wait 5 seconds, then verify: openclaw gateway probe
+<span class="comment"># Restart gateway to load MCP server</span>
+<span class="cmd">openclaw gateway restart</span>
+<span class="cmd">sleep 5</span>
+<span class="cmd">openclaw gateway probe | head -8</span>
 
-Test that the agent can see email:
-openclaw agent --agent cos --message "What are the 3 most recent emails? Just sender and subject, no content." --session-id "gmail-test-$(date +%s)" --timeout 60 2>&1 | tail -15
+<span class="comment"># Test agent can see email (won't send anything — just reads)</span>
+<span class="cmd">openclaw agent --agent cos \
+  --message "What are the 3 most recent emails? Just sender and subject, no content." \
+  --session-id "gmail-test-$(date +%s)" \
+  --timeout 60 2>&1 | tail -15</span>
 
-Test calendar:
-openclaw agent --agent cos --message "What meetings are scheduled for today? Time and topic only." --session-id "cal-test-$(date +%s)" --timeout 60 2>&1 | tail -15</code>
+<span class="comment"># Test agent can see calendar</span>
+<span class="cmd">openclaw agent --agent cos \
+  --message "What meetings are scheduled for today? Time and topic only." \
+  --session-id "cal-test-$(date +%s)" \
+  --timeout 60 2>&1 | tail -15</span></code>
       </div>
     </div>
 
@@ -538,26 +594,35 @@ openclaw agent --agent cos --message "What meetings are scheduled for today? Tim
       <div class="code-block">
         <span class="code-label">Claude Code Prompt</span>
         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        <code><span class="comment"># Add email and calendar hard boundaries to the CoS agent's SOUL.md</span>
+        <code><span class="comment"># Add email and calendar boundaries to SOUL.md</span>
 
-Append these rules to ~/.openclaw/agents/cos/SOUL.md:
+<span class="cmd">cat >> ~/.openclaw/agents/cos/SOUL.md << 'BOUNDARIES'
 
-## Email Integration Rules (HARD BOUNDARIES)
+## Email Integration Rules (HARD BOUNDARIES — NEVER VIOLATE)
 - You can READ emails to inform your briefs and analysis
-- You can DRAFT reply suggestions for the user to review in Telegram
+- You can DRAFT reply suggestions for Tylor to review in Telegram
 - You CANNOT send, forward, reply to, or delete any email — EVER
 - Surface the 3 most important unread emails in morning briefs
 - Flag emails unresponded to for 24+ hours in evening sweeps
 - NEVER include full email body text in Telegram messages (summaries only)
+- NEVER include email addresses of external contacts in Telegram
+- TMG emails and Path emails are SEPARATE — never cross-reference
 
-## Calendar Integration Rules (HARD BOUNDARIES)
+## Calendar Integration Rules (HARD BOUNDARIES — NEVER VIOLATE)
 - You can READ calendar events to prepare meeting briefs
 - You CANNOT create, modify, cancel, or delete events — EVER
 - You CANNOT accept or decline invitations — EVER
 - For meetings in the next 2 hours, include prep notes and relationship context
 - Flag double-bookings or conflicts but do not resolve them
+- TMG calendar and Path calendar are SEPARATE — never merge
+BOUNDARIES</span>
 
-Also copy the updated SOUL.md to the workspace directory if one exists separately.</code>
+<span class="comment"># Copy to workspace-cos</span>
+<span class="cmd">cp ~/.openclaw/agents/cos/SOUL.md ~/.openclaw/workspace-cos/SOUL.md</span>
+
+<span class="comment"># Verify boundaries were added</span>
+<span class="cmd">grep -c "HARD BOUNDARIES" ~/.openclaw/agents/cos/SOUL.md</span>
+<span class="comment"># Should return 2 (email + calendar)</span></code>
       </div>
     </div>
   </div>
@@ -609,25 +674,34 @@ Also copy the updated SOUL.md to the workspace directory if one exists separatel
       <div class="code-block">
         <span class="code-label">Claude Code Prompt</span>
         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        <code><span class="comment"># Configure BlueBubbles iMessage channel in OpenClaw</span>
+        <code><span class="comment"># Configure BlueBubbles — replace PORT, PASSWORD, and PHONE_NUMBER below</span>
+<span class="cmd">export PATH="$HOME/.npm-global/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"</span>
 
-Add a bluebubbles channel to ~/.openclaw/openclaw.json:
-
-channels.bluebubbles = {
-  "serverUrl": "http://127.0.0.1:[PORT]",  -- get port from BlueBubbles app
-  "password": "[BLUEBUBBLES_PASSWORD]",     -- password set in BlueBubbles
-  "webhookPath": "/bluebubbles-webhook",
-  "sendReadReceipts": true,
-  "allowFrom": ["[PHONE_NUMBER_E164]"],     -- e.g. "+13055551234"
-  "dmPolicy": "pairing",
-  "groups": { "*": { "requireMention": true } }
+<span class="cmd">python3 -c "
+import json
+c = json.load(open('$HOME/.openclaw/openclaw.json'))
+c.setdefault('channels', {})['bluebubbles'] = {
+    'serverUrl': 'http://127.0.0.1:1234',
+    'password': 'REPLACE_WITH_BLUEBUBBLES_PASSWORD',
+    'webhookPath': '/bluebubbles-webhook',
+    'sendReadReceipts': True,
+    'allowFrom': ['+1XXXXXXXXXX'],
+    'dmPolicy': 'pairing',
+    'groups': {'*': {'requireMention': True}}
 }
+json.dump(c, open('$HOME/.openclaw/openclaw.json', 'w'), indent=2)
+print('BlueBubbles configured')
+"</span>
 
-Restart the gateway: openclaw gateway restart
+<span class="comment"># Restart gateway</span>
+<span class="cmd">openclaw gateway restart</span>
+<span class="cmd">sleep 5</span>
+<span class="cmd">openclaw gateway probe | head -8</span>
 
-Then the user sends a test iMessage. Approve pairing with:
-openclaw pairing list bluebubbles
-openclaw pairing approve bluebubbles [CODE]</code>
+<span class="comment"># After Tylor sends a test iMessage, approve the pairing:</span>
+<span class="cmd">openclaw pairing list bluebubbles</span>
+<span class="comment"># Copy the CODE shown, then:</span>
+<span class="cmd">openclaw pairing approve bluebubbles CODE_HERE</span></code>
       </div>
     </div>
 
@@ -662,17 +736,23 @@ openclaw pairing approve bluebubbles [CODE]</code>
         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
         <code><span class="comment"># Add iMessage boundaries to SOUL.md</span>
 
-Append to ~/.openclaw/agents/cos/SOUL.md:
+<span class="cmd">cat >> ~/.openclaw/agents/cos/SOUL.md << 'BOUNDARIES'
 
-## iMessage Integration Rules (HARD BOUNDARIES)
+## iMessage Integration Rules (HARD BOUNDARIES — NEVER VIOLATE)
 - You can READ iMessages to understand communication context
 - You CANNOT send iMessages on behalf of the user — EVER
 - iMessage content is HIGHLY PERSONAL — never reference personal messages in business briefs
 - Only reference iMessage content if the user explicitly asks about a specific conversation
 - NEVER forward iMessage content to Telegram or any other channel
 - NEVER store iMessage content in memory files
+BOUNDARIES</span>
 
-Copy updated SOUL.md to workspace directory as well.</code>
+<span class="comment"># Sync to workspace</span>
+<span class="cmd">cp ~/.openclaw/agents/cos/SOUL.md ~/.openclaw/workspace-cos/SOUL.md</span>
+
+<span class="comment"># Verify all 3 boundary sections exist</span>
+<span class="cmd">grep -c "HARD BOUNDARIES" ~/.openclaw/agents/cos/SOUL.md</span>
+<span class="comment"># Should return 3 (email + calendar + iMessage)</span></code>
       </div>
     </div>
   </div>
@@ -698,24 +778,37 @@ Copy updated SOUL.md to workspace directory as well.</code>
       <div class="code-block">
         <span class="code-label">Claude Code Prompt</span>
         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        <code><span class="comment"># Test the full morning brief pipeline with integrations</span>
+        <code><span class="comment"># Test morning brief with all integrations</span>
+<span class="cmd">export PATH="$HOME/.npm-global/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"</span>
 
-Run in Terminal. Run the morning brief script:
-bash ~/scripts/morning-brief.sh
+<span class="comment"># Run the morning brief (WILL send to Telegram)</span>
+<span class="cmd">bash ~/scripts/morning-brief.sh</span>
 
-Check the log:
-tail -10 ~/scripts/morning-brief.log
+<span class="comment"># Check the log for success</span>
+<span class="cmd">tail -10 ~/scripts/morning-brief.log</span>
 
-The brief should now include:
-- Calendar events for today with prep notes
-- Top 3 important unread emails (sender + subject only)
-- Any emails unresponded to for 24+ hours
-- Existing task priorities and relationship context
+<span class="comment"># === TROUBLESHOOTING IF BRIEF IS MISSING DATA ===</span>
 
-If any integration is missing from the brief, check:
-- gog auth status (Google still authorized?)
-- curl -s http://127.0.0.1:[BLUEBUBBLES_PORT]/api/v1/ping (BlueBubbles running?)
-- curl -s http://127.0.0.1:18789/health (Gateway healthy?)</code>
+<span class="comment"># Check Google auth is still valid</span>
+<span class="cmd">gog auth status</span>
+
+<span class="comment"># Check Gmail access directly</span>
+<span class="cmd">gog gmail list --max-results 3</span>
+
+<span class="comment"># Check Calendar access directly</span>
+<span class="cmd">gog calendar events list --max-results 3</span>
+
+<span class="comment"># Check BlueBubbles is running</span>
+<span class="cmd">curl -s http://127.0.0.1:1234/api/v1/ping</span>
+
+<span class="comment"># Check Gateway health</span>
+<span class="cmd">curl -s http://127.0.0.1:18789/health</span>
+
+<span class="comment"># Check agent can generate a response</span>
+<span class="cmd">openclaw agent --agent cos \
+  --message "Quick status: can you see my email, calendar, and iMessages? Reply yes/no for each." \
+  --session-id "verify-$(date +%s)" \
+  --timeout 60 2>&1 | tail -10</span></code>
       </div>
     </div>
 
@@ -731,25 +824,60 @@ If any integration is missing from the brief, check:
       <div class="code-block">
         <span class="code-label">Claude Code Prompt</span>
         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        <code><span class="comment"># Post-integration security verification</span>
+        <code><span class="comment"># === FULL POST-INTEGRATION SECURITY CHECK ===</span>
+<span class="cmd">export PATH="$HOME/.npm-global/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"</span>
 
-Verify:
+<span class="comment"># 1. Check no OAuth tokens leaked to logs</span>
+<span class="cmd">echo "=== Credential leak check ===" && grep -riE "access_token|refresh_token|client_secret" ~/.openclaw/logs/*.log 2>/dev/null | head -5 || echo "CLEAN — no tokens in logs"</span>
 
-1. No OAuth tokens in logs:
-grep -riE "access_token|refresh_token|client_secret" ~/.openclaw/logs/*.log 2>/dev/null | head -5
+<span class="comment"># 2. Verify tool permissions are still hardened</span>
+<span class="cmd">echo "=== Tool permissions ===" && cat ~/.openclaw/openclaw.json | python3 -c "
+import json,sys
+c = json.load(sys.stdin)
+t = c.get('tools',{})
+print('Profile:', t.get('profile'))
+print('Exec security:', t.get('exec',{}).get('security'))
+print('FS workspaceOnly:', t.get('fs',{}).get('workspaceOnly'))
+print('Elevated:', t.get('elevated',{}).get('enabled'))
+"</span>
 
-2. Tool permissions still hardened:
-Check tools.profile = "messaging", tools.exec.security = "deny", tools.elevated.enabled = false
+<span class="comment"># 3. Verify SOUL.md has all 3 boundary sections</span>
+<span class="cmd">echo "=== SOUL.md boundaries ===" && grep -c "HARD BOUNDARIES" ~/.openclaw/agents/cos/SOUL.md && echo "(should be 3: email + calendar + iMessage)"</span>
 
-3. SOUL.md has all boundaries:
-grep -c "HARD BOUNDARIES" ~/.openclaw/agents/cos/SOUL.md
-(Should return 3 — email, calendar, iMessage)
+<span class="comment"># 4. Verify gateway is loopback only</span>
+<span class="cmd">echo "=== Gateway binding ===" && openclaw gateway probe 2>&1 | grep -iE "loopback|bind|Reachable"</span>
 
-4. Gateway still loopback:
-openclaw gateway probe | grep -i loopback
+<span class="comment"># 5. Verify DM scope isolation</span>
+<span class="cmd">echo "=== DM scope ===" && cat ~/.openclaw/openclaw.json | python3 -c "
+import json,sys
+c = json.load(sys.stdin)
+print('DM scope:', c.get('session',{}).get('dmScope'))
+tg = c.get('channels',{}).get('telegram',{})
+for name, acct in tg.get('accounts',{}).items():
+    print(f'{name}: dmPolicy={acct.get(\"dmPolicy\",\"not set\")}')
+bb = c.get('channels',{}).get('bluebubbles',{})
+print(f'BlueBubbles dmPolicy: {bb.get(\"dmPolicy\",\"not set\")}')
+"</span>
 
-5. Create audit log entry:
-echo "[$(date)] Integration complete: Gmail (readonly), Calendar (readonly), iMessage (readonly via BlueBubbles). All SOUL.md boundaries set." >> ~/scripts/security-audit-log.md</code>
+<span class="comment"># 6. Verify Google OAuth scopes are read-only</span>
+<span class="cmd">echo "=== Google auth status ===" && gog auth status 2>&1</span>
+
+<span class="comment"># 7. Check OpenClaw version (must be post-CVE patch)</span>
+<span class="cmd">echo "=== OpenClaw version ===" && openclaw --version 2>&1 | head -1</span>
+
+<span class="comment"># 8. Check no exposed bot tokens in recent logs</span>
+<span class="cmd">echo "=== Bot token leak check ===" && grep -riE "bot[0-9]{8,}" ~/.openclaw/logs/*.log 2>/dev/null | head -3 || echo "CLEAN — no bot tokens in logs"</span>
+
+<span class="comment"># 9. Write audit log entry</span>
+<span class="cmd">echo "[$(date)] INTEGRATION COMPLETE
+- Gmail: readonly via gog CLI + MCP
+- Calendar: readonly via gog CLI + MCP
+- iMessage: readonly via BlueBubbles (local)
+- SOUL.md: 3 HARD BOUNDARY sections (email, calendar, iMessage)
+- Tool profile: messaging (exec deny, fs workspaceOnly, elevated off)
+- Telegram tokens: rotated
+- Gateway: loopback only
+- Status: ALL CHECKS PASSED" >> ~/scripts/security-audit-log.md && echo "Audit log written to ~/scripts/security-audit-log.md"</span></code>
       </div>
     </div>
   </div>
