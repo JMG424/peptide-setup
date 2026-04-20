@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Integration Setup — Path Peptides AI Team</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #050505;
+  --bg-card: #0e0e0e;
+  --bg-elevated: #161616;
+  --bg-code: #0a0f04;
+  --text: #f0ede8;
+  --text-muted: #8a8780;
+  --text-dim: #5c5a55;
+  --accent: #c8ff73;
+  --accent-dim: rgba(200,255,115,0.08);
+  --accent-border: rgba(200,255,115,0.15);
+  --border: rgba(255,255,255,0.06);
+  --border-hover: rgba(255,255,255,0.12);
+  --radius: 12px;
+  --radius-lg: 20px;
+  --green: #4ade80;
+  --yellow: #fbbf24;
+  --red: #f87171;
+  --blue: #60a5fa;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.grain {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.container { max-width: 820px; margin: 0 auto; padding: 0 1.5rem; }
+
+/* NAV */
+.nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(5,5,5,0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 1.5rem;
+}
+.nav-inner {
+  max-width: 820px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-brand { font-size: 13px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.5px; }
+.nav-links { display: flex; gap: 20px; }
+.nav-links a {
+  font-size: 11px; font-weight: 500; color: var(--text-dim);
+  text-decoration: none; letter-spacing: 0.5px; text-transform: uppercase;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--accent); }
+
+/* HERO */
+.hero {
+  padding: 5rem 1.5rem 4rem;
+  text-align: center;
+  position: relative;
+}
+.hero::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 400px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(200,255,115,0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-badge {
+  display: inline-block;
+  font-size: 11px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid var(--accent-border); background: var(--accent-dim);
+  padding: 6px 16px; border-radius: 100px; margin-bottom: 1.5rem;
+  position: relative; z-index: 1;
+}
+.hero h1 {
+  font-family: 'Playfair Display', serif; font-weight: 400;
+  font-size: clamp(2rem, 5vw, 3rem); line-height: 1.15;
+  margin-bottom: 1.25rem; position: relative; z-index: 1;
+}
+.hero h1 em { font-style: italic; color: var(--accent); }
+.hero-sub {
+  font-size: 17px; color: var(--text-muted);
+  max-width: 560px; margin: 0 auto 1rem;
+  position: relative; z-index: 1;
+}
+.hero-time {
+  font-size: 14px; color: var(--text-dim);
+  position: relative; z-index: 1;
+}
+.hero-time strong { color: var(--accent); }
+
+/* SECTIONS */
+section { padding: 3.5rem 0; position: relative; }
+.section-divider {
+  width: 60px; height: 1px;
+  background: var(--accent); opacity: 0.3;
+  margin: 0 auto 2.5rem;
+}
+.section-label {
+  font-size: 11px; font-weight: 600; letter-spacing: 2.5px;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 0.75rem;
+}
+section h2 {
+  font-family: 'Playfair Display', serif; font-weight: 400;
+  font-size: clamp(1.5rem, 3vw, 2rem); margin-bottom: 0.5rem; line-height: 1.2;
+}
+section h2 em { font-style: italic; color: var(--accent); }
+.section-intro {
+  font-size: 15px; color: var(--text-muted);
+  max-width: 600px; margin-bottom: 2rem; line-height: 1.7;
+}
+
+/* STEP CARDS */
+.step-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-bottom: 1.25rem;
+  transition: border-color 0.3s;
+  position: relative;
+}
+.step-card:hover { border-color: var(--border-hover); }
+.step-card.needs-person {
+  border-left: 3px solid var(--accent);
+}
+.step-card.jason-only {
+  border-left: 3px solid var(--blue);
+}
+.step-header {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 1rem;
+}
+.step-num {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 500;
+  flex-shrink: 0;
+}
+.step-card.needs-person .step-num {
+  background: var(--accent-dim); border: 1px solid var(--accent-border); color: var(--accent);
+}
+.step-card.jason-only .step-num {
+  background: rgba(96,165,250,0.08); border: 1px solid rgba(96,165,250,0.15); color: var(--blue);
+}
+.step-title { font-size: 17px; font-weight: 500; }
+.step-who {
+  font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 4px; margin-left: auto;
+}
+.step-card.needs-person .step-who {
+  background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent-border);
+}
+.step-card.jason-only .step-who {
+  background: rgba(96,165,250,0.08); color: var(--blue); border: 1px solid rgba(96,165,250,0.15);
+}
+.step-desc {
+  font-size: 14px; color: var(--text-muted); line-height: 1.7; margin-bottom: 1rem;
+}
+.step-time {
+  font-size: 12px; color: var(--text-dim);
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* CODE BLOCKS */
+.code-block {
+  background: var(--bg-code);
+  border: 1px solid rgba(200,255,115,0.08);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+  position: relative;
+}
+.code-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 8px; display: block;
+}
+.code-block code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; line-height: 1.6; color: #d4d0c8;
+  white-space: pre-wrap; word-break: break-all;
+}
+.code-block .comment { color: #5c6a4a; }
+.code-block .cmd { color: var(--accent); }
+.copy-btn {
+  position: absolute; top: 10px; right: 10px;
+  background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+  color: var(--text-dim); border-radius: 6px; padding: 4px 10px;
+  font-size: 11px; cursor: pointer; transition: all 0.2s;
+  font-family: 'Outfit', sans-serif;
+}
+.copy-btn:hover { background: var(--accent-dim); color: var(--accent); border-color: var(--accent-border); }
+
+/* CHECKLIST */
+.checklist { margin: 1.5rem 0; }
+.check-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 8px 0;
+  font-size: 14px; color: var(--text-muted);
+}
+.check-box {
+  width: 18px; height: 18px; min-width: 18px;
+  border: 1px solid var(--border-hover); border-radius: 4px;
+  margin-top: 2px; cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.check-box:hover { border-color: var(--accent); }
+.check-box.checked {
+  background: var(--accent); border-color: var(--accent);
+}
+.check-box.checked::after { content: '✓'; font-size: 12px; color: #050505; font-weight: 700; }
+
+/* CALLOUT */
+.callout {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 1.75rem;
+  margin: 1.5rem 0;
+}
+.callout.warning {
+  background: rgba(251,191,36,0.05);
+  border-color: rgba(251,191,36,0.15);
+}
+.callout-icon { font-size: 18px; margin-bottom: 6px; }
+.callout h4 { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
+.callout p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+/* STATUS BAR */
+.status-bar {
+  display: flex; gap: 12px; margin: 1.5rem 0;
+  flex-wrap: wrap;
+}
+.status-item {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 100px; padding: 6px 14px;
+  font-size: 12px; color: var(--text-muted);
+}
+.status-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+}
+.status-dot.green { background: var(--green); box-shadow: 0 0 6px rgba(74,222,128,0.4); }
+.status-dot.yellow { background: var(--yellow); }
+.status-dot.gray { background: var(--text-dim); }
+
+/* TIMELINE */
+.timeline { position: relative; padding-left: 28px; margin: 1.5rem 0; }
+.timeline::before {
+  content: ''; position: absolute; left: 5px; top: 8px; bottom: 8px;
+  width: 1px; background: linear-gradient(180deg, var(--accent), var(--border));
+}
+.tl-item { position: relative; padding: 0 0 1.25rem 20px; }
+.tl-item:last-child { padding-bottom: 0; }
+.tl-item::before {
+  content: ''; position: absolute; left: -23px; top: 8px;
+  width: 7px; height: 7px; border-radius: 50%; background: var(--accent);
+}
+.tl-time { font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 0.5px; }
+.tl-text { font-size: 14px; color: var(--text-muted); }
+
+/* FOOTER */
+footer {
+  text-align: center; padding: 3rem 0;
+  border-top: 1px solid var(--border);
+}
+footer p { font-size: 13px; color: var(--text-dim); margin-bottom: 4px; }
+
+@media (max-width: 600px) {
+  .nav-links { display: none; }
+  .step-who { display: none; }
+  .status-bar { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="nav-inner">
+    <div class="nav-brand">Path Peptides — Integration Setup</div>
+    <div class="nav-links">
+      <a href="#security">Security</a>
+      <a href="#google">Google</a>
+      <a href="#imessage">iMessage</a>
+      <a href="#verify">Verify</a>
+    </div>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">Phase 2 &bull; Integration</div>
+  <h1>Connecting your AI team<br>to <em>your world</em></h1>
+  <p class="hero-sub">We're wiring up Gmail, Calendar, and iMessage so your Chief of Staff can see what's actually happening — not just what you tell it.</p>
+  <p class="hero-time">Total time: <strong>~30 minutes</strong> of your time &bull; Jason handles the rest</p>
+</div>
+
+<!-- WHAT'S HAPPENING -->
+<section>
+  <div class="section-divider"></div>
+  <div class="container">
+    <div class="section-label">Overview</div>
+    <h2>What we're <em>connecting</em></h2>
+    <p class="section-intro">Three integrations. All read-only. Your agents can see your email, calendar, and iMessages — but they can never send, delete, or modify anything without your explicit approval.</p>
+
+    <div class="status-bar">
+      <div class="status-item"><div class="status-dot gray"></div> Gmail — Read Only</div>
+      <div class="status-item"><div class="status-dot gray"></div> Google Calendar — Read Only</div>
+      <div class="status-item"><div class="status-dot gray"></div> iMessage — Read Only</div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-icon">🔒</div>
+      <h4>Security-first approach</h4>
+      <p>Before connecting anything, we harden your system's security — rotate credentials, restrict permissions, and lock down access. Your agents can draft replies and suggest changes, but every action requires your explicit approval. Nothing happens without you.</p>
+    </div>
+  </div>
+</section>
+
+<!-- STEP 1: SECURITY -->
+<section id="security">
+  <div class="section-divider"></div>
+  <div class="container">
+    <div class="section-label">Step 1</div>
+    <h2>Security <em>hardening</em></h2>
+    <p class="section-intro">Before we connect anything sensitive, we lock things down. This protects your data from day one.</p>
+
+    <div class="step-card needs-person">
+      <div class="step-header">
+        <div class="step-num">1a</div>
+        <div class="step-title">Rotate Telegram Bot Tokens</div>
+        <div class="step-who">You + Jason</div>
+      </div>
+      <div class="step-desc">Open Telegram on your phone. Message @BotFather. We'll revoke old tokens and generate fresh ones for each of your bots.</div>
+      <div class="step-time">⏱ 5 minutes</div>
+
+      <div class="callout" style="margin-top:1rem">
+        <h4>What you do</h4>
+        <p>1. Open Telegram → search @BotFather → tap Start<br>
+        2. Send <code>/mybots</code><br>
+        3. Select each bot (CoS, Security, Systems) → "API Token" → "Revoke current token"<br>
+        4. Read the new token to Jason (or screenshot it)</p>
+      </div>
+
+      <div class="code-block">
+        <span class="code-label">Claude Code Prompt</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <code><span class="comment"># After receiving new tokens from BotFather, update them on the machine:</span>
+
+Update the Telegram bot tokens in ~/.openclaw/openclaw.json:
+- cos bot token: [PASTE NEW COS TOKEN]
+- security bot token: [PASTE NEW SECURITY TOKEN]  
+- systems bot token: [PASTE NEW SYSTEMS TOKEN]
+
+Then restart the gateway with `openclaw gateway restart` and verify it's healthy with `openclaw gateway probe`.
+
+Test that Telegram still works by sending a dry-run message:
+openclaw message send --channel telegram --account cos --target [CHAT_ID] --message "Token rotation complete" --dry-run</code>
+      </div>
+    </div>
+
+    <div class="step-card jason-only">
+      <div class="step-header">
+        <div class="step-num">1b</div>
+        <div class="step-title">Harden Tool Permissions</div>
+        <div class="step-who">Jason Only</div>
+      </div>
+      <div class="step-desc">Restrict what agents can do before connecting sensitive data. Profile set to "messaging" — no filesystem access, no code execution, no elevated permissions.</div>
+      <div class="step-time">⏱ 5 minutes</div>
+
+      <div class="code-block">
+        <span class="code-label">Claude Code Prompt</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <code><span class="comment"># Harden tool permissions in openclaw.json</span>
+
+Update the tools section of ~/.openclaw/openclaw.json:
+
+Set tools.profile to "messaging"
+Set tools.fs.workspaceOnly to true
+Set tools.exec.security to "deny" and tools.exec.ask to "always"
+Set tools.elevated.enabled to false
+Add tools.deny array with: "sessions_spawn", "sessions_send"
+
+Preserve existing tools.web config (web search should stay enabled).
+
+Restart the gateway and verify it's healthy.</code>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STEP 2: GOOGLE -->
+<section id="google">
+  <div class="section-divider"></div>
+  <div class="container">
+    <div class="section-label">Step 2</div>
+    <h2>Gmail + Calendar <em>integration</em></h2>
+    <p class="section-intro">One authorization gives your AI team read access to your email and calendar. Morning briefs will reference your actual schedule and flag important emails.</p>
+
+    <div class="step-card jason-only">
+      <div class="step-header">
+        <div class="step-num">2a</div>
+        <div class="step-title">Install Google Workspace CLI</div>
+        <div class="step-who">Jason Only</div>
+      </div>
+      <div class="step-desc">Install the official Google CLI tool that gives OpenClaw structured access to Gmail, Calendar, and Drive.</div>
+      <div class="step-time">⏱ 5 minutes</div>
+
+      <div class="code-block">
+        <span class="code-label">Claude Code Prompt</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <code><span class="comment"># Install Google Workspace CLI on this machine</span>
+
+Run in Terminal:
+export PATH="$HOME/.npm-global/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"
+npm install -g @googleworkspace/cli
+
+Verify installation with: which gog && gog --version
+
+If gog is not found after install, check npm global bin path and add to PATH.</code>
+      </div>
+    </div>
+
+    <div class="step-card needs-person">
+      <div class="step-header">
+        <div class="step-num">2b</div>
+        <div class="step-title">Authorize Your Google Account</div>
+        <div class="step-who">You + Jason</div>
+      </div>
+      <div class="step-desc">A browser window opens. You log into your Google account and click "Allow." This grants read-only access — the AI can see your email and calendar but cannot send, delete, or modify anything.</div>
+      <div class="step-time">⏱ 10 minutes</div>
+
+      <div class="callout">
+        <h4>What you do</h4>
+        <p>1. Jason runs the authorization command on your machine<br>
+        2. A browser window opens on your Mac<br>
+        3. Log in with your Google account<br>
+        4. Click "Allow" — this grants READ-ONLY access<br>
+        5. The browser confirms "Authorization successful"</p>
+      </div>
+
+      <div class="callout warning">
+        <div class="callout-icon">⚠️</div>
+        <h4>What this does NOT do</h4>
+        <p>Your AI team CANNOT send emails, delete emails, create calendar events, accept invitations, or modify anything in your Google account. Read-only means read-only. We can add write permissions later if you want them — but only with your explicit approval.</p>
+      </div>
+
+      <div class="code-block">
+        <span class="code-label">Claude Code Prompt</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <code><span class="comment"># Authenticate Google account for Gmail + Calendar access</span>
+
+Run in Terminal:
+export PATH="$HOME/.npm-global/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"
+
+gog auth add [USER_EMAIL]
+
+This will open a browser on the Mac. The user needs to log in and click Allow.
+
+After authorization, verify with:
+gog auth status
+gog gmail list --max-results 3
+gog calendar events list --max-results 3
+
+If both commands return data, Google integration is working.</code>
+      </div>
+    </div>
+
+    <div class="step-card jason-only">
+      <div class="step-header">
+        <div class="step-num">2c</div>
+        <div class="step-title">Connect to OpenClaw</div>
+        <div class="step-who">Jason Only</div>
+      </div>
+      <div class="step-desc">Wire the Google CLI into OpenClaw as an MCP server so your agents can access email and calendar data during conversations and briefs.</div>
+      <div class="step-time">⏱ 10 minutes</div>
+
+      <div class="code-block">
+        <span class="code-label">Claude Code Prompt</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <code><span class="comment"># Connect Google Workspace CLI to OpenClaw as MCP server</span>
+
+Add a Google Workspace MCP server to ~/.openclaw/openclaw.json:
+
+Add to the mcpServers section (create if it doesn't exist):
+"google-workspace": {
+  "command": "npx",
+  "args": ["@google/workspace-mcp"],
+  "env": {}
+}
+
+Restart the gateway: openclaw gateway restart
+Wait 5 seconds, then verify: openclaw gateway probe
+
+Test that the agent can see email:
+openclaw agent --agent cos --message "What are the 3 most recent emails? Just sender and subject, no content." --session-id "gmail-test-$(date +%s)" --timeout 60 2>&1 | tail -15
+
+Test calendar:
+openclaw agent --agent cos --message "What meetings are scheduled for today? Time and topic only." --session-id "cal-test-$(date +%s)" --timeout 60 2>&1 | tail -15</code>
+      </div>
+    </div>
+
+    <div class="step-card jason-only">
+      <div class="step-header">
+        <div class="step-num">2d</div>
+        <div class="step-title">Set Integration Boundaries</div>
+        <div class="step-who">Jason Only</div>
+      </div>
+      <div class="step-desc">Add hard rules to your agent's identity file so it knows exactly what it can and cannot do with your email and calendar.</div>
+      <div class="step-time">⏱ 5 minutes</div>
+
+      <div class="code-block">
+        <span class="code-label">Claude Code Prompt</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <code><span class="comment"># Add email and calendar hard boundaries to the CoS agent's SOUL.md</span>
+
+Append these rules to ~/.openclaw/agents/cos/SOUL.md:
+
+## Email Integration Rules (HARD BOUNDARIES)
+- You can READ emails to inform your briefs and analysis
+- You can DRAFT reply suggestions for the user to review in Telegram
+- You CANNOT send, forward, reply to, or delete any email — EVER
+- Surface the 3 most important unread emails in morning briefs
+- Flag emails unresponded to for 24+ hours in evening sweeps
+- NEVER include full email body text in Telegram messages (summaries only)
+
+## Calendar Integration Rules (HARD BOUNDARIES)
+- You can READ calendar events to prepare meeting briefs
+- You CANNOT create, modify, cancel, or delete events — EVER
+- You CANNOT accept or decline invitations — EVER
+- For meetings in the next 2 hours, include prep notes and relationship context
+- Flag double-bookings or conflicts but do not resolve them
+
+Also copy the updated SOUL.md to the workspace directory if one exists separately.</code>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STEP 3: iMESSAGE -->
+<section id="imessage">
+  <div class="section-divider"></div>
+  <div class="container">
+    <div class="section-label">Step 3</div>
+    <h2>iMessage <em>integration</em></h2>
+    <p class="section-intro">BlueBubbles connects your iMessage to OpenClaw — running locally on your Mac, data never leaves the machine. Your AI team gains messaging context while respecting personal boundaries.</p>
+
+    <div class="step-card needs-person">
+      <div class="step-header">
+        <div class="step-num">3a</div>
+        <div class="step-title">Install BlueBubbles</div>
+        <div class="step-who">You + Jason</div>
+      </div>
+      <div class="step-desc">Download and install BlueBubbles on your Mac. Sign in with your Apple ID. This creates a local bridge between iMessage and your AI team — everything stays on your machine.</div>
+      <div class="step-time">⏱ 10 minutes</div>
+
+      <div class="callout">
+        <h4>What you do</h4>
+        <p>1. Download BlueBubbles from <a href="https://bluebubbles.app" style="color:var(--accent)">bluebubbles.app</a><br>
+        2. Install and open the app<br>
+        3. Sign in with your Apple ID (the one you use for iMessage)<br>
+        4. In Settings: enable "Web API" and set a server password<br>
+        5. Set up Google Firebase (BlueBubbles walks you through this)<br>
+        6. Note the server URL shown (e.g., http://127.0.0.1:1234)</p>
+      </div>
+
+      <div class="callout warning">
+        <div class="callout-icon">🔒</div>
+        <h4>Privacy note</h4>
+        <p>BlueBubbles runs 100% locally on your Mac. Your iMessage data never leaves the machine. The AI team can read messages for context but cannot send iMessages on your behalf. Personal messages are never referenced in business briefs unless you specifically ask.</p>
+      </div>
+    </div>
+
+    <div class="step-card jason-only">
+      <div class="step-header">
+        <div class="step-num">3b</div>
+        <div class="step-title">Connect to OpenClaw</div>
+        <div class="step-who">Jason Only</div>
+      </div>
+      <div class="step-desc">Configure OpenClaw to talk to BlueBubbles. Set allowlist so only your number is accepted. Enable pairing mode for security.</div>
+      <div class="step-time">⏱ 5 minutes</div>
+
+      <div class="code-block">
+        <span class="code-label">Claude Code Prompt</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <code><span class="comment"># Configure BlueBubbles iMessage channel in OpenClaw</span>
+
+Add a bluebubbles channel to ~/.openclaw/openclaw.json:
+
+channels.bluebubbles = {
+  "serverUrl": "http://127.0.0.1:[PORT]",  -- get port from BlueBubbles app
+  "password": "[BLUEBUBBLES_PASSWORD]",     -- password set in BlueBubbles
+  "webhookPath": "/bluebubbles-webhook",
+  "sendReadReceipts": true,
+  "allowFrom": ["[PHONE_NUMBER_E164]"],     -- e.g. "+13055551234"
+  "dmPolicy": "pairing",
+  "groups": { "*": { "requireMention": true } }
+}
+
+Restart the gateway: openclaw gateway restart
+
+Then the user sends a test iMessage. Approve pairing with:
+openclaw pairing list bluebubbles
+openclaw pairing approve bluebubbles [CODE]</code>
+      </div>
+    </div>
+
+    <div class="step-card needs-person">
+      <div class="step-header">
+        <div class="step-num">3c</div>
+        <div class="step-title">Pair Your iMessage</div>
+        <div class="step-who">You + Jason</div>
+      </div>
+      <div class="step-desc">Send a test iMessage to activate the connection. Jason approves the pairing code on the backend. Takes 30 seconds.</div>
+      <div class="step-time">⏱ 2 minutes</div>
+
+      <div class="callout">
+        <h4>What you do</h4>
+        <p>1. Open Messages on your phone or Mac<br>
+        2. Send any message to the Apple ID signed into this Mac<br>
+        3. Jason approves the pairing code<br>
+        4. You'll see a response — iMessage is connected</p>
+      </div>
+    </div>
+
+    <div class="step-card jason-only">
+      <div class="step-header">
+        <div class="step-num">3d</div>
+        <div class="step-title">Set iMessage Boundaries</div>
+        <div class="step-who">Jason Only</div>
+      </div>
+      <div class="step-desc">Add privacy rules so the agent never references personal messages in business context and never sends iMessages on your behalf.</div>
+
+      <div class="code-block">
+        <span class="code-label">Claude Code Prompt</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <code><span class="comment"># Add iMessage boundaries to SOUL.md</span>
+
+Append to ~/.openclaw/agents/cos/SOUL.md:
+
+## iMessage Integration Rules (HARD BOUNDARIES)
+- You can READ iMessages to understand communication context
+- You CANNOT send iMessages on behalf of the user — EVER
+- iMessage content is HIGHLY PERSONAL — never reference personal messages in business briefs
+- Only reference iMessage content if the user explicitly asks about a specific conversation
+- NEVER forward iMessage content to Telegram or any other channel
+- NEVER store iMessage content in memory files
+
+Copy updated SOUL.md to workspace directory as well.</code>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VERIFY -->
+<section id="verify">
+  <div class="section-divider"></div>
+  <div class="container">
+    <div class="section-label">Step 4</div>
+    <h2>Verify <em>everything works</em></h2>
+    <p class="section-intro">Run a test morning brief that pulls from your real email, calendar, and messages. This is the moment it all comes together.</p>
+
+    <div class="step-card jason-only">
+      <div class="step-header">
+        <div class="step-num">4a</div>
+        <div class="step-title">Run Test Morning Brief</div>
+        <div class="step-who">Jason Only</div>
+      </div>
+      <div class="step-desc">Fire a morning brief manually. It should now reference your actual calendar events and flag important emails. You'll receive it in Telegram within 60 seconds.</div>
+      <div class="step-time">⏱ 5 minutes</div>
+
+      <div class="code-block">
+        <span class="code-label">Claude Code Prompt</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <code><span class="comment"># Test the full morning brief pipeline with integrations</span>
+
+Run in Terminal. Run the morning brief script:
+bash ~/scripts/morning-brief.sh
+
+Check the log:
+tail -10 ~/scripts/morning-brief.log
+
+The brief should now include:
+- Calendar events for today with prep notes
+- Top 3 important unread emails (sender + subject only)
+- Any emails unresponded to for 24+ hours
+- Existing task priorities and relationship context
+
+If any integration is missing from the brief, check:
+- gog auth status (Google still authorized?)
+- curl -s http://127.0.0.1:[BLUEBUBBLES_PORT]/api/v1/ping (BlueBubbles running?)
+- curl -s http://127.0.0.1:18789/health (Gateway healthy?)</code>
+      </div>
+    </div>
+
+    <div class="step-card jason-only">
+      <div class="step-header">
+        <div class="step-num">4b</div>
+        <div class="step-title">Security Verification</div>
+        <div class="step-who">Jason Only</div>
+      </div>
+      <div class="step-desc">Final security check — make sure no credentials leaked to logs, permissions are still locked down, and all boundaries are in place.</div>
+      <div class="step-time">⏱ 5 minutes</div>
+
+      <div class="code-block">
+        <span class="code-label">Claude Code Prompt</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <code><span class="comment"># Post-integration security verification</span>
+
+Verify:
+
+1. No OAuth tokens in logs:
+grep -riE "access_token|refresh_token|client_secret" ~/.openclaw/logs/*.log 2>/dev/null | head -5
+
+2. Tool permissions still hardened:
+Check tools.profile = "messaging", tools.exec.security = "deny", tools.elevated.enabled = false
+
+3. SOUL.md has all boundaries:
+grep -c "HARD BOUNDARIES" ~/.openclaw/agents/cos/SOUL.md
+(Should return 3 — email, calendar, iMessage)
+
+4. Gateway still loopback:
+openclaw gateway probe | grep -i loopback
+
+5. Create audit log entry:
+echo "[$(date)] Integration complete: Gmail (readonly), Calendar (readonly), iMessage (readonly via BlueBubbles). All SOUL.md boundaries set." >> ~/scripts/security-audit-log.md</code>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT CHANGES -->
+<section>
+  <div class="section-divider"></div>
+  <div class="container">
+    <div class="section-label">After Integration</div>
+    <h2>What your morning brief <em>looks like now</em></h2>
+
+    <div class="step-card" style="border-left: 3px solid var(--green);">
+      <div class="step-desc" style="margin-bottom:0; font-size:15px; color: var(--text);">
+        <strong>☀️ Morning Brief</strong><br><br>
+        <span style="color:var(--text-muted)">
+        <strong style="color:var(--accent)">TODAY'S CALENDAR</strong><br>
+        • 10:00 AM — Carlos meeting (1hr) — Prep: review 2024/2025 tax docs, entity structure overview (TMG, TMG Capital, Path, personal)<br>
+        • 2:30 PM — Team standup (30 min)<br>
+        • 4:00 PM — Path sales review with Oscar<br><br>
+
+        <strong style="color:var(--accent)">EMAIL FLAGS</strong><br>
+        • Will (tax accountant) — "Extension filing confirmation" — 2 hrs ago<br>
+        • Oscar — "Backwater payment status?" — unresponded 36 hrs ⚠️<br>
+        • Matt — "Invoice #2026-042 attached" — needs your approval<br><br>
+
+        <strong style="color:var(--accent)">PRIORITIES</strong><br>
+        • Carlos meeting prep is your #1 — happening in 3 hours<br>
+        • Oscar's backwater payment is overdue — respond today<br>
+        • Matt's invoice needs sign-off before EOD<br><br>
+
+        <em>Want me to draft a reply to Oscar about the payment?</em>
+        </span>
+      </div>
+    </div>
+
+    <p class="section-intro" style="margin-top:1.5rem">That's the difference between "infrastructure" and "intelligence." Your Chief of Staff now sees your real world — not just what you remember to tell it.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <p style="font-family:'Playfair Display',serif; font-style:italic; color:var(--text-muted); font-size:15px;">Read-only first. Write access later. Trust is earned.</p>
+    <p style="margin-top:8px;">Built by Jason @ Meta57</p>
+  </div>
+</footer>
+
+<script>
+function copyCode(btn) {
+  const code = btn.parentElement.querySelector('code').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+
+// Interactive checklist
+document.querySelectorAll('.check-box').forEach(box => {
+  box.addEventListener('click', () => box.classList.toggle('checked'));
+});
+</script>
+
+</body>
+</html>
